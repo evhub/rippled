@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import curses
 import ntpath
 import os
 import sys
@@ -33,19 +34,18 @@ TEXT_WRAPPER = textwrap.TextWrapper(
 
 DISPLAY_EMPTY_ENVS = True
 
-
 def join_items(items, joiner=''):
-  return joiner.join(str(i) for i in items)
+  return joiner.join(str(i) for i in items or ())
 
 def print_build_vars(env, name, value):
     """Pretty-print values as a build configuration."""
     name = '%s' % name.rjust(10)
 
     if type(value) is not str:
-        value = joiner(value, ' ')
+        value = join_items(value, ' ')
 
     for line in TEXT_WRAPPER.wrap(value):
-        yield NAME_VALUE_PAIR_FORMAT % (name, line)
+        print(NAME_VALUE_PAIR_FORMAT % (name, line))
         name = EMPTY_NAME
 
 def print_build_config(env):
@@ -59,6 +59,16 @@ def print_build_config(env):
 def print_cmd_line(s, target, source, env):
     print(COMMAND_LINE_FORMAT % join_items(target))
 
+def first_line_starting_with(filename, prefix):
+  with open(filename, 'r') as contents:
+    for line in contents:
+      line = line.strip()
+      if line.startswith(prefix):
+        return line[len(prefix):].split()
+
+def sibling_file(filename, sibling):
+    parent = os.path.dirname(os.path.normpath(filename))
+    return os.path.join(parent, sibling)
 
 def get_libs(path):
     """Returns the list of libraries needed by the test source file. This is
@@ -69,40 +79,27 @@ def get_libs(path):
 
        path = path to source file"""
 
-    prefix = LIBS_PREFIX
-    with open(path, 'rb') as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith(prefix):
-                items = line.split(prefix, 1)[1].strip()
-                return [x.strip() for x in items.split(' ')]
+    return first_line_starting_with(path, LIBS_PREFIX)
 
-def get_mods(path):
+def get_source_modules(path):
     """Returns the list of source modules needed by the test source file.
 
      // MODULES: <module>...
 
      path = path to source file."""
 
-    prefix = MODS_PREFIX
-    with open(path, 'rb') as f:
-        for line in f:
-            line = line.strip()
-            if line.startswith(prefix):
-                items = line.split(prefix, 1)[1].strip()
-                items = [os.path.normpath(os.path.join(
-                    os.path.dirname(path), x.strip())) for
-                        x in items.split(' ')]
-                return items
+    items = first_line_starting_with(path, MODS_PREFIX) or []
+    return [sibling_file(path, i) for i in items]
+
 
 def build_test(env, path):
     """Build a stand alone executable that runs
        all the test suites in one source file."""
     libs = get_libs(path)
-    mods = get_mods(path)
+    source_modules = get_source_modules(path)
     bin = os.path.basename(os.path.splitext(path)[0])
     bin = os.path.join('bin', bin)
-    srcs = [MAIN_PROGRAM_FILE, path] + (mods or [])
+    srcs = [MAIN_PROGRAM_FILE, path] + (source_modules or [])
 
     # All paths get normalized here, so we can use posix
     # forward slashes for everything including on Windows
@@ -115,7 +112,7 @@ def build_test(env, path):
 
 #-------------------------------------------------------------------------------
 
-def main():
+def main(_):
     env = Environment()
 
     env['PRINT_CMD_LINE_FUNC'] = print_cmd_line
@@ -137,10 +134,6 @@ def main():
         env.Prepend(CPPPATH=home)
         env.Append(LIBPATH=os.path.join(home, 'stage', 'lib'))
 
-    # Set up flags
-    if not env.get('CXXFLAGS'):
-      env['CXXFLAGS'] = DEFAULT_CXX_FLAGS
-
     for root, dirs, files in os.walk('.'):
         for path in files:
             path = os.path.join(root,path)
@@ -149,4 +142,4 @@ def main():
 
     print_build_config(env)
 
-main()
+curses.wrapper(main)
