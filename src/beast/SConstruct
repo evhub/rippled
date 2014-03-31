@@ -25,38 +25,39 @@ NAME_VALUE_PAIR_FORMAT = '%s \033[94m%s\033[0m'
 COMMAND_LINE_FORMAT = '           \033[94m%s\033[0m'
 EMPTY_NAME = '          '
 
-def print_build_vars(env, var):
+TEXT_WRAPPER = textwrap.TextWrapper(
+    break_long_words=False,
+    break_on_hyphens=False,
+    width=69,
+)
+
+DISPLAY_EMPTY_ENVS = True
+
+
+def join_items(items, joiner=''):
+  return joiner.join(str(i) for i in items)
+
+def print_build_vars(env, name, value):
     """Pretty-print values as a build configuration."""
-    val = env.get(var, '')
+    name = '%s' % name.rjust(10)
 
-    if val:
-        name = '%s' % var.rjust(10)
+    if type(value) is not str:
+        value = joiner(value, ' ')
 
-        wrapper = textwrap.TextWrapper()
-        wrapper.break_long_words = False
-        wrapper.break_on_hyphens = False
-        wrapper.width = 69
-
-        if type(val) is str:
-            lines = wrapper.wrap(val)
-        else:
-            lines = wrapper.wrap(' '.join(str(x) for x in val))
-
-        for line in lines:
-            print(NAME_VALUE_PAIR_FORMAT % (name, line))
-            name = EMPTY_NAME
+    for line in TEXT_WRAPPER.wrap(value):
+        yield NAME_VALUE_PAIR_FORMAT % (name, line)
+        name = EMPTY_NAME
 
 def print_build_config(env):
-    config_vars = ENVIRONMENT_VARIABLES
-    sys.stdout.write('\nConfiguration:\n')
-    for var in config_vars:
-        print_build_vars(env,var)
+    print('\nConfiguration:')
+    for variable in ENVIRONMENT_VARIABLES:
+        value = env.get(variable)
+        if value or DISPLAY_EMPTY_ENVS:
+           print_build_vars(env, variable, value)
     print()
 
-def print_cmd_line(s, target, src, env):
-    target = (''.join([str(x) for x in target]))
-    # source = (''.join([str(x) for x in src]))
-    print(COMMAND_LINE_FORMAT % target)
+def print_cmd_line(s, target, source, env):
+    print(COMMAND_LINE_FORMAT % join_items(target))
 
 
 def get_libs(path):
