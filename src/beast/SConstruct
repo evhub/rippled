@@ -6,6 +6,16 @@ import os
 import sys
 import textwrap
 
+def add_beast_to_path():
+  python_home = os.path.join(os.getcwd(), 'python')
+  if python_home not in sys.path:
+    sys.path.append(python_home)
+    print('!!!', python_home)
+
+add_beast_to_path()
+
+from beast.util  import Terminal
+
 ENVIRONMENT_VARIABLES = {
   'BOOST_HOME': None,
   'CC': '',
@@ -43,13 +53,6 @@ TEXT_WRAPPER = textwrap.TextWrapper(
 DISPLAY_EMPTY_ENVS = True
 BOOST_HOME = 'BOOST_HOME'
 
-def graphics(text, *modes):
-    modes = ';'.join(str(m) for m in modes)
-    return '\033[%sm%s\033[0m' % (modes, text)
-
-def blue(text):
-    return graphics(text, 94)
-
 def is_string(s):
   return isinstance(s, (str, unicode))
 
@@ -73,7 +76,7 @@ def print_build_vars(env, name, value):
         value = join_items(value, ' ')
 
     for line in TEXT_WRAPPER.wrap(value):
-        print(' '.join([name, blue(line)]))
+        print(' '.join([name, Terminal.blue(line)]))
         name = EMPTY_NAME
 
 def print_build_config(env):
