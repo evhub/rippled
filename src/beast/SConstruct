@@ -6,9 +6,18 @@ import os
 import sys
 import textwrap
 
-ENVIRONMENT_VARIABLES = [
-    'BOOST_HOME', 'CC', 'CXX', 'CFLAGS', 'CCFLAGS', 'CPPFLAGS', 'CCCOMSTR',
-    'CXXFLAGS', 'LIBPATH', 'LINKCOMSTR', 'LINKFLAGS', 'LIBS']
+ENVIRONMENT_VARIABLES = {
+  'BOOST_HOME': None,
+  'CC': '',
+  'CCFLAGS': '',
+  'CFLAGS': '',
+  'CPPFLAGS': None,
+  'CXX': 'clang++',
+  'CXXFLAGS': '-x c++ -stdlib=libc++ -std=c++11 -frtti -g',
+  'LIBPATH': '',
+  'LIBS': '',
+  'LINKFLAGS': '-stdlib=libc++',
+  }
 
 LIBS_PREFIX = '// LIBS:'
 MODS_PREFIX = '// MODULES:'
@@ -69,10 +78,10 @@ def print_build_vars(env, name, value):
 
 def print_build_config(env):
     print('\nConfiguration:')
-    for variable in ENVIRONMENT_VARIABLES:
-        value = env.get(variable)
+    for name, default in ENVIRONMENT_VARIABLES.items():
+        value = env.get(name)
         if value or DISPLAY_EMPTY_ENVS:
-           print_build_vars(env, variable, value)
+           print_build_vars(env, name, value)
     print()
 
 def print_cmd_line(s, target, source, env):
@@ -136,10 +145,10 @@ def make_env():
 
     # Copy important os environment variables into env
     replacements = {}
-    for variable in ENVIRONMENT_VARIABLES:
-        value = os.environ.get(variable)
+    for name, default in ENVIRONMENT_VARIABLES.items():
+        value = os.environ.get(name, default)
         if value:
-            replacements[variable] = value
+            replacements[name] = value
     env.Replace(**replacements)
     env['CCCOMSTR'] = 'Compiling $TARGET'
     env['LINKCOMSTR'] = 'Linking $TARGET'
@@ -153,7 +162,7 @@ def run_tests(env):
     for root, dirs, files in os.walk('.'):
         for path in files:
             path = os.path.join(root,path)
-            if (path.endswith('.test.cpp')):
+            if path.endswith('.test.cpp'):
                 build_test(env,path)
 
 def main():
