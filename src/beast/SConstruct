@@ -33,15 +33,25 @@ TEXT_WRAPPER = textwrap.TextWrapper(
 )
 
 DISPLAY_EMPTY_ENVS = True
+BOOST_HOME = 'BOOST_HOME'
+
+def is_string(s):
+  return isinstance(value, (s, unicode))
+
+def get_boost_path():
+    try:
+       return os.environ[BOOST_HOME]
+    except KeyError:
+      raise KeyError('%s environment variable is not set.' % BOOST_HOME)
 
 def join_items(items, joiner=''):
-  return joiner.join(str(i) for i in items or ())
+    return joiner.join(str(i) for i in items or ())
 
 def print_build_vars(env, name, value):
     """Pretty-print values as a build configuration."""
     name = '%s' % name.rjust(10)
 
-    if type(value) is not str:
+    if not is_string(value):
         value = join_items(value, ' ')
 
     for line in TEXT_WRAPPER.wrap(value):
@@ -65,10 +75,7 @@ def first_line_starting_with(filename, prefix):
       line = line.strip()
       if line.startswith(prefix):
         return line[len(prefix):].split()
-
-def sibling_file(filename, sibling):
-    parent = os.path.dirname(os.path.normpath(filename))
-    return os.path.join(parent, sibling)
+  return []
 
 def get_libs(path):
     """Returns the list of libraries needed by the test source file. This is
@@ -88,8 +95,9 @@ def get_source_modules(path):
 
      path = path to source file."""
 
-    items = first_line_starting_with(path, MODS_PREFIX) or []
-    return [sibling_file(path, i) for i in items]
+    items = first_line_starting_with(path, MODS_PREFIX)
+    parent = os.path.dirname(os.path.normpath(path))
+    return [os.path.join(parent, i) for i in items]
 
 
 def build_test(env, path):
@@ -112,7 +120,7 @@ def build_test(env, path):
 
 #-------------------------------------------------------------------------------
 
-def main(_):
+def main():
     env = Environment()
 
     env['PRINT_CMD_LINE_FUNC'] = print_cmd_line
@@ -128,11 +136,11 @@ def main(_):
             replacements[variable] = value
     env.Replace(**replacements)
 
-    # Set up boost variables
-    home = os.environ.get('BOOST_HOME', None)
-    if home is not None:
-        env.Prepend(CPPPATH=home)
-        env.Append(LIBPATH=os.path.join(home, 'stage', 'lib'))
+    # Set up the boost path.
+    boost_path = get_boost_path()
+    if boost_path:
+      env.Prepend(CPPPATH=boost_path)
+    env.Append(LIBPATH=os.path.join(boost_path, 'stage', 'lib'))
 
     for root, dirs, files in os.walk('.'):
         for path in files:
@@ -142,4 +150,4 @@ def main(_):
 
     print_build_config(env)
 
-curses.wrapper(main)
+main()
