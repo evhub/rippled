@@ -6,11 +6,9 @@ import os
 import sys
 import textwrap
 
-DEFAULT_CXX_FLAGS = ['-std=c++11', '-frtti', '-g']
-
 ENVIRONMENT_VARIABLES = [
-  'CC', 'CXX', 'CFLAGS', 'CCFLAGS', 'CPPFLAGS',
-  'CXXFLAGS', 'LIBPATH', 'LINKFLAGS', 'LIBS']
+    'BOOST_HOME', 'CC', 'CXX', 'CFLAGS', 'CCFLAGS', 'CPPFLAGS', 'CCCOMSTR',
+    'CXXFLAGS', 'LIBPATH', 'LINKCOMSTR', 'LINKFLAGS', 'LIBS']
 
 LIBS_PREFIX = '// LIBS:'
 MODS_PREFIX = '// MODULES:'
@@ -27,13 +25,6 @@ NAME_VALUE_PAIR_FORMAT = '%s \033[94m%s\033[0m'
 COMMAND_LINE_FORMAT = '           \033[94m%s\033[0m'
 EMPTY_NAME = ' ' * FIELD_WIDTH
 
-def graphics(text, *modes):
-  modes = ';'.join(str(m) for m in modes)
-  return '\033[%sm%s\033[0m' % (modes, text)
-
-def blue(text):
-  return graphics(text, 94)
-
 TEXT_WRAPPER = textwrap.TextWrapper(
     break_long_words=False,
     break_on_hyphens=False,
@@ -43,14 +34,24 @@ TEXT_WRAPPER = textwrap.TextWrapper(
 DISPLAY_EMPTY_ENVS = True
 BOOST_HOME = 'BOOST_HOME'
 
+def graphics(text, *modes):
+    modes = ';'.join(str(m) for m in modes)
+    return '\033[%sm%s\033[0m' % (modes, text)
+
+def blue(text):
+    return graphics(text, 94)
+
 def is_string(s):
   return isinstance(s, (str, unicode))
 
-def get_boost_path():
+def boost_path():
     try:
-       return os.environ[BOOST_HOME]
+      path = os.environ[BOOST_HOME]
+      if path:
+        return path
     except KeyError:
-      raise KeyError('%s environment variable is not set.' % BOOST_HOME)
+      pass
+    raise KeyError('%s environment variable is not set.' % BOOST_HOME)
 
 def join_items(items, joiner=''):
     return joiner.join(str(i) for i in items or ())
@@ -107,7 +108,6 @@ def get_source_modules(path):
     parent = os.path.dirname(os.path.normpath(path))
     return [os.path.join(parent, i) for i in items]
 
-
 def build_test(env, path):
     """Build a stand alone executable that runs
        all the test suites in one source file."""
@@ -126,9 +126,7 @@ def build_test(env, path):
         env_.Append(LIBS=libs)
     env_.Program(bin, srcs)
 
-#-------------------------------------------------------------------------------
-
-def main():
+def make_env():
     env = Environment()
 
     env['PRINT_CMD_LINE_FUNC'] = print_cmd_line
@@ -143,19 +141,24 @@ def main():
         if value:
             replacements[variable] = value
     env.Replace(**replacements)
+    env['CCCOMSTR'] = 'Compiling $TARGET'
+    env['LINKCOMSTR'] = 'Linking $TARGET'
+    boost = boost_path()
+    env.Prepend(CPPPATH=boost)
+    env.Append(LIBPATH=os.path.join(boost, 'stage', 'lib'))
 
-    # Set up the boost path.
-    boost_path = get_boost_path()
-    if boost_path:
-      env.Prepend(CPPPATH=boost_path)
-    env.Append(LIBPATH=os.path.join(boost_path, 'stage', 'lib'))
+    return env
 
+def run_tests(env):
     for root, dirs, files in os.walk('.'):
         for path in files:
             path = os.path.join(root,path)
             if (path.endswith('.test.cpp')):
                 build_test(env,path)
 
+def main():
+    env = make_env()
     print_build_config(env)
+    run_tests(env)
 
 main()
