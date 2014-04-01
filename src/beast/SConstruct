@@ -21,10 +21,18 @@ VARIANT_DIRECTORIES = {
 }
 
 MAIN_PROGRAM_FILE = 'beast/unit_test/tests/main.cpp'
+FIELD_WIDTH = 10
 
 NAME_VALUE_PAIR_FORMAT = '%s \033[94m%s\033[0m'
 COMMAND_LINE_FORMAT = '           \033[94m%s\033[0m'
-EMPTY_NAME = '          '
+EMPTY_NAME = ' ' * FIELD_WIDTH
+
+def graphics(text, *modes):
+  modes = ';'.join(str(m) for m in modes)
+  return '\033[%sm%s\033[0m' % (modes, text)
+
+def blue(text):
+  return graphics(text, 94)
 
 TEXT_WRAPPER = textwrap.TextWrapper(
     break_long_words=False,
@@ -36,7 +44,7 @@ DISPLAY_EMPTY_ENVS = True
 BOOST_HOME = 'BOOST_HOME'
 
 def is_string(s):
-  return isinstance(value, (s, unicode))
+  return isinstance(s, (str, unicode))
 
 def get_boost_path():
     try:
@@ -49,13 +57,13 @@ def join_items(items, joiner=''):
 
 def print_build_vars(env, name, value):
     """Pretty-print values as a build configuration."""
-    name = '%s' % name.rjust(10)
+    name = '%s' % name.rjust(FIELD_WIDTH)
 
     if not is_string(value):
         value = join_items(value, ' ')
 
     for line in TEXT_WRAPPER.wrap(value):
-        print(NAME_VALUE_PAIR_FORMAT % (name, line))
+        print(' '.join([name, blue(line)]))
         name = EMPTY_NAME
 
 def print_build_config(env):
