@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 
+from beast.util import File
+
 LIBS_PREFIX = '// LIBS:'
 MODS_PREFIX = '// MODULES:'
 
@@ -53,10 +55,7 @@ def build_executable(env, path, main_program_file):
         env_.Append(LIBS=libs)
     env_.Program(bin, srcs)
 
-def run_tests(env, main_program_file, root_dir, suffix):
-    for root, dirs, files in os.walk(root_dir):
-        for path in files:
-            path = os.path.join(root, path)
-            if path.endswith(suffix):
-                build_executable(env, path, main_program_file)
+def run_tests(env, main_program_file, root, suffix):
+    for path in File.find_files_with_suffix(root, suffix):
+        build_executable(env, path, main_program_file)
 
