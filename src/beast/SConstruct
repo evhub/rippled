@@ -39,7 +39,6 @@ VARIANT_DIRECTORIES = {
 MAIN_PROGRAM_FILE = 'beast/unit_test/tests/main.cpp'
 FIELD_WIDTH = 10
 
-COMMAND_LINE_FORMAT = '           \033[94m%s\033[0m'
 EMPTY_NAME = ' ' * FIELD_WIDTH
 
 TEXT_WRAPPER = textwrap.TextWrapper(
@@ -54,10 +53,7 @@ def print_build_vars(env, name, value):
     """Pretty-print values as a build configuration."""
     name = '%s' % name.rjust(FIELD_WIDTH)
 
-    if not String.is_string(value):
-        value = String.join_items(value, ' ')
-
-    for line in TEXT_WRAPPER.wrap(value):
+    for line in TEXT_WRAPPER.wrap(String.join(value, ' ')):
         print(' '.join([name, Terminal.blue(line)]))
         name = EMPTY_NAME
 
@@ -70,7 +66,7 @@ def print_build_config(env):
     print()
 
 def print_cmd_line(s, target, source, env):
-    print(COMMAND_LINE_FORMAT % String.join_items(target))
+    print(EMPTY_NAME + Terminal.blue(String.join(target)))
 
 def make_env():
     env = Environment()

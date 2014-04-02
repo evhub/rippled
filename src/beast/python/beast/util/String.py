@@ -1,8 +1,13 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 def is_string(s):
-  return isinstance(s, (str, unicode))
+    """Is s a string? - in either Python 2.x or 3.x."""
+    return isinstance(s, (str, unicode))
 
-def join_items(items, joiner=''):
-    return joiner.join(str(i) for i in items or ())
+def join(items, joiner=''):
+    """If items is not a string, stringify its members and join them."""
+    if is_string(items):
+        return items
+    else:
+        return joiner.join(str(i) for i in items)
 
