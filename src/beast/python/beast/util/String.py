@@ -6,8 +6,8 @@ def is_string(s):
 
 def join(items, joiner=''):
     """If items is not a string, stringify its members and join them."""
-    if is_string(items):
-        return items
+    if not items or is_string(items):
+        return items or ''
     else:
         return joiner.join(str(i) for i in items)
 
