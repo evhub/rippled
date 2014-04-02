@@ -14,6 +14,7 @@ def add_beast_to_path():
 add_beast_to_path()
 
 from beast.util import Boost
+from beast.util import String
 from beast.util import Terminal
 from beast.util import Tests
 
@@ -38,7 +39,6 @@ VARIANT_DIRECTORIES = {
 MAIN_PROGRAM_FILE = 'beast/unit_test/tests/main.cpp'
 FIELD_WIDTH = 10
 
-NAME_VALUE_PAIR_FORMAT = '%s \033[94m%s\033[0m'
 COMMAND_LINE_FORMAT = '           \033[94m%s\033[0m'
 EMPTY_NAME = ' ' * FIELD_WIDTH
 
@@ -50,18 +50,12 @@ TEXT_WRAPPER = textwrap.TextWrapper(
 
 DISPLAY_EMPTY_ENVS = True
 
-def is_string(s):
-  return isinstance(s, (str, unicode))
-
-def join_items(items, joiner=''):
-    return joiner.join(str(i) for i in items or ())
-
 def print_build_vars(env, name, value):
     """Pretty-print values as a build configuration."""
     name = '%s' % name.rjust(FIELD_WIDTH)
 
-    if not is_string(value):
-        value = join_items(value, ' ')
+    if not String.is_string(value):
+        value = String.join_items(value, ' ')
 
     for line in TEXT_WRAPPER.wrap(value):
         print(' '.join([name, Terminal.blue(line)]))
@@ -76,7 +70,7 @@ def print_build_config(env):
     print()
 
 def print_cmd_line(s, target, source, env):
-    print(COMMAND_LINE_FORMAT % join_items(target))
+    print(COMMAND_LINE_FORMAT % String.join_items(target))
 
 def make_env():
     env = Environment()

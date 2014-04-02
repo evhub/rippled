@@ -47,7 +47,6 @@ def _get_version_number(path):
 
 def _validate_version(v):
   version = v // 100000, (v // 100) % 100, v % 100
-  print(version, MINIMUM_BOOST_VERSION)
   if version < MINIMUM_BOOST_VERSION:
     raise Exception(VERSION_TOO_OLD_ERROR % (
       _text(*version), _text(*MINIMUM_BOOST_VERSION)))
