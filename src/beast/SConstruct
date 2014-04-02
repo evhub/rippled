@@ -19,6 +19,8 @@ from beast.util import String
 from beast.util import Terminal
 from beast.util import Tests
 
+from beast.util.Environment import fill_environment
+
 ENVIRONMENT_VARIABLES = {
   'BOOST_HOME': None,
   'CC': '',
@@ -71,31 +73,15 @@ def print_build_config(env):
 def print_cmd_line(s, target, source, env):
     print(EMPTY_NAME + Terminal.blue(String.join(target)))
 
-def make_env():
-    env = Environment()
-
-    env['PRINT_CMD_LINE_FUNC'] = print_cmd_line
-
-    for name, path in VARIANT_DIRECTORIES.items():
-        env.VariantDir(os.path.join(*path), name, duplicate=0)
-
-    # Copy important os environment variables into env
-    replacements = {}
-    for name, default in ENVIRONMENT_VARIABLES.items():
-        value = os.environ.get(name, default)
-        if value:
-            replacements[name] = value
-    env.Replace(**replacements)
-    env['CCCOMSTR'] = 'Compiling $TARGET'
-    env['LINKCOMSTR'] = 'Linking $TARGET'
-    env.Prepend(CPPPATH=Boost.PATH)
-    env.Append(LIBPATH=Boost.LIBRARY_PATH)
-
-    return env
-
 def main():
     File.validate_libraries(Boost.PATH, BOOST_LIBRARIES)
-    env = make_env()
+    env = Environment()
+    fill_environment(env,
+                     appends={'LIBPATH': Boost.LIBRARY_PATH},
+                     environment_variables=ENVIRONMENT_VARIABLES,
+                     prepends={'CPPPATH': Boost.PATH},
+                     replacements={'PRINT_CMD_LINE_FUNC': print_cmd_line},
+                     variant_directories=VARIANT_DIRECTORIES)
     print_build_config(env)
     Tests.run_tests(env, MAIN_PROGRAM_FILE, '.', '.test.cpp')
 
