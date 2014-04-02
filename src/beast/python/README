@@ -1,0 +1,7 @@
+Python code for scons.
+
+To run the tests, type:
+
+    python -m unittest discover
+
+in this directory.
