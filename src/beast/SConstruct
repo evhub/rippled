@@ -13,8 +13,9 @@ def add_beast_to_path():
 
 add_beast_to_path()
 
+from beast.util import Boost
 from beast.util import Terminal
-from beast.util.Tests import run_tests
+from beast.util import Tests
 
 ENVIRONMENT_VARIABLES = {
   'BOOST_HOME': None,
@@ -48,19 +49,9 @@ TEXT_WRAPPER = textwrap.TextWrapper(
 )
 
 DISPLAY_EMPTY_ENVS = True
-BOOST_HOME = 'BOOST_HOME'
 
 def is_string(s):
   return isinstance(s, (str, unicode))
-
-def boost_path():
-    try:
-      path = os.environ[BOOST_HOME]
-      if path:
-        return path
-    except KeyError:
-      pass
-    raise KeyError('%s environment variable is not set.' % BOOST_HOME)
 
 def join_items(items, joiner=''):
     return joiner.join(str(i) for i in items or ())
@@ -104,7 +95,7 @@ def make_env():
     env.Replace(**replacements)
     env['CCCOMSTR'] = 'Compiling $TARGET'
     env['LINKCOMSTR'] = 'Linking $TARGET'
-    boost = boost_path()
+    boost = Boost.boost_path()
     env.Prepend(CPPPATH=boost)
     env.Append(LIBPATH=os.path.join(boost, 'stage', 'lib'))
 
@@ -113,6 +104,6 @@ def make_env():
 def main():
     env = make_env()
     print_build_config(env)
-    run_tests(env, MAIN_PROGRAM_FILE, '.', '.test.cpp')
+    Tests.run_tests(env, MAIN_PROGRAM_FILE, '.', '.test.cpp')
 
 main()
