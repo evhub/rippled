@@ -43,13 +43,14 @@ BOOST_LIBRARIES = 'boost_system',
 
 MAIN_PROGRAM_FILE = 'beast/unit_test/tests/main.cpp'
 FIELD_WIDTH = 10
+LINE_WIDTH = 69
 
 EMPTY_NAME = ' ' * FIELD_WIDTH
 
 TEXT_WRAPPER = textwrap.TextWrapper(
     break_long_words=False,
     break_on_hyphens=False,
-    width=69,
+    width=LINE_WIDTH,
 )
 
 DISPLAY_EMPTY_ENVS = True

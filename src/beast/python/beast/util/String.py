@@ -11,3 +11,10 @@ def join(items, joiner=''):
     else:
         return joiner.join(str(i) for i in items)
 
+def single_line(line, report_errors=True, joiner='+'):
+    """Force a string to be a single line with no carriage returns, and report
+    a warning if there was more than one line."""
+    lines = line.strip().splitlines()
+    if report_errors and len(lines) > 1:
+        print('multiline result:', lines)
+    return joiner.join(lines)
