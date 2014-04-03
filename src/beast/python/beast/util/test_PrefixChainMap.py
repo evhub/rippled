@@ -5,21 +5,22 @@ from unittest import TestCase
 from beast.util.PrefixChainMap import prefix_chain_map
 
 DICT = {
-    '': {
-        'foo': 'foo-default',
-        'bar': 'bar-default',
-        },
+  '': {
+    'foo': 'foo-default',
+    'bar': 'bar-default',
+    },
 
-    'Darwin': {
-        'foo': 'foo-darwin',
-        'baz': 'baz-darwin',
-        },
+  'Darwin': {
+    'foo': 'foo-darwin',
+    'baz': 'baz-darwin',
+    },
 
-    'Darwin.10.8': {
-        'foo': 'foo-darwin-10.8',
-        'bing': 'bing-darwin-10.8',
-        },
-    }
+  'Darwin.10.8': {
+    'foo': 'foo-darwin-10.8',
+    'bing': 'bing-darwin-10.8',
+    },
+
+  }
 
 class test_PrefixChainMap(TestCase):
     def computeMapValue(self, config, key):

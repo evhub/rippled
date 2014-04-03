@@ -18,3 +18,15 @@ def single_line(line, report_errors=True, joiner='+'):
     if report_errors and len(lines) > 1:
         print('multiline result:', lines)
     return joiner.join(lines)
+
+# From https://github.com/lerugray/pickett/blob/master/pickett/ParseScript.py
+def remove_comment(line):
+    """Remove trailing comments from one line."""
+    start = 0
+    while True:
+      loc = line.find('#', start)
+      if loc == -1:
+          return line.replace('\\#', '#')
+      elif not (loc and line[loc - 1] == '\\'):
+          return line[:loc].replace('\\#', '#')
+      start = loc + 1

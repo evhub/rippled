@@ -75,7 +75,7 @@ def print_cmd_line(s, target, source, env):
     print(EMPTY_NAME + Terminal.blue(String.join(target)))
 
 def main():
-    File.validate_libraries(Boost.PATH, BOOST_LIBRARIES)
+    File.validate_libraries(Boost.LIBPATH, BOOST_LIBRARIES)
     env = Environment()
     fill_environment(env,
                      appends={'LIBPATH': Boost.LIBRARY_PATH},
