@@ -5,9 +5,9 @@ import re
 
 from beast.util import String
 
-ENV_LINE_MATCH = re.compile(r'(?: export ) \s+ (\w+) \s* = (.*)', re.VERBOSE)
+ENV_LINE_MATCH = re.compile(r'(?: export \s+)? (.*) = (.*)', re.VERBOSE)
 
-def read_env_file(data):
+def read_env_file(data, print=print):
   try:
     return json.loads(data)
   except ValueError:
@@ -21,12 +21,12 @@ def read_env_file(data):
       match = ENV_LINE_MATCH.match(line)
       if match:
         name, value = match.groups()
-        results[name] = String.remove_quotes(value)
+        results[name.strip()] = String.remove_quotes(value.strip())
       else:
         bad_lines.append([number, raw_line])
   if bad_lines:
-    print("WARNING: Didn't understand the following lines:")
+    print("WARNING: Didn't understand the following environment file lines:")
     for number, line in bad_lines:
-      print('%d. %s' % (number + 1, line))
+      print('%d. >>> %s' % (number + 1, line))
 
   return results
