@@ -10,5 +10,5 @@ JSON = """
 }"""
 
 class test_ReadEnvFile(TestCase):
-  def test_readJson(self):
+  def testReadJson(self):
     self.assertEqual(read_env_file(JSON), {'foo': 'FOO', 'bar': 'BAR'})
