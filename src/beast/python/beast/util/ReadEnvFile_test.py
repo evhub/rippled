@@ -11,8 +11,10 @@ JSON = """
 
 ENV = """
 # An env file.
+
 FOO=foo
 export BAR="bar bar bar"
+
 # export BAZ=baz should be ignored.
 
 """
@@ -25,8 +27,17 @@ NO SPACES IN NAMES="valid value"
 """
 
 class test_ReadEnvFile(TestCase):
-  def testReadJson(self):
+  def test_read_json(self):
     self.assertEqual(read_env_file(JSON), RESULT)
 
-  def testReadEnv(self):
+  def test_read_env(self):
     self.assertEqual(read_env_file(ENV), RESULT)
+
+  def test_read_env_error(self):
+    errors = []
+    self.assertEqual(read_env_file(BAD_ENV, errors.append), RESULT)
+    self.assertEqual(errors, [
+        "WARNING: Didn't understand the following environment file lines:",
+        "10. >>> This line isn't right.",
+        '11. >>> NO SPACES IN NAMES="valid value"'])
+

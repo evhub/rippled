@@ -5,7 +5,8 @@ import re
 
 from beast.util import String
 
-ENV_LINE_MATCH = re.compile(r'(?: export \s+)? (.*) = (.*)', re.VERBOSE)
+ENV_LINE_MATCH = re.compile(r'(?: export \s+)? \s* (\S*) \s* = (.*)',
+                            re.VERBOSE)
 
 def read_env_file(data, print=print):
   try:
