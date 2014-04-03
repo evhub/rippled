@@ -2,6 +2,6 @@ Python code for scons.
 
 To run the tests, type:
 
-    python -m unittest discover
+    python -m unittest discover -p \*_test.py
 
 in this directory.
