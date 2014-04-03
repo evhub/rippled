@@ -32,7 +32,7 @@ def remove_comment(line):
       return line[:loc].replace('\\#', '#')
     start = loc + 1
 
-def remove_quotes(line, quote='"'):
+def remove_quotes(line, quote='"', print=print):
   if not line.startswith(quote):
     return line
   if line.endswith(quote):

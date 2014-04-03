@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import json
 import re
 
+from beast.util import String
+
 ENV_LINE_MATCH = re.compile(r'(?: export ) \s+ (\w+) \s* = (.*)', re.VERBOSE)
 
 def read_env_file(data):
@@ -19,7 +21,7 @@ def read_env_file(data):
       match = ENV_LINE_MATCH.match(line)
       if match:
         name, value = match.groups()
-        results[name] = value
+        results[name] = String.remove_quotes(value)
       else:
         bad_lines.append([number, raw_line])
   if bad_lines:

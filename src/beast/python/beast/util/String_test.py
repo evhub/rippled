@@ -15,4 +15,19 @@ class String_test(TestCase):
       'hello # not a comment ')
 
   def test_remove_quotes(self):
-    pass
+    errors = []
+    self.assertEqual(String.remove_quotes('hello', print=errors.append),
+                     'hello')
+    self.assertEqual(String.remove_quotes('"hello"', print=errors.append),
+                     'hello')
+    self.assertEqual(String.remove_quotes('hello"', print=errors.append),
+                     'hello"')
+    self.assertEqual(errors, [])
+
+  def test_remove_quotes_error(self):
+    errors = []
+    self.assertEqual(String.remove_quotes('"hello', print=errors.append),
+                     'hello')
+    self.assertEqual(errors,
+                     ['WARNING: line started with " but didn\'t end with one:',
+                      '"hello'])
