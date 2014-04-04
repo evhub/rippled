@@ -9,5 +9,11 @@ def _get_items_with_prefix(key, mapping):
         if key.startswith(k):
             yield v
 
+def compose(*dicts):
+    result = {}
+    for d in dicts:
+        result.update(*d)
+    return result
+
 def prefix_chain_map(key, mapping):
     return ChainMap(*_get_items_with_prefix(key, mapping))
