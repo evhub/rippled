@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 from unittest import TestCase
 
-from beast.util.PrefixChainMap import prefix_chain_map
+from beast.util import Dict
 
 DICT = {
   '': {
@@ -22,9 +22,9 @@ DICT = {
 
   }
 
-class test_PrefixChainMap(TestCase):
+class test_Dict(TestCase):
     def computeMapValue(self, config, key):
-        return prefix_chain_map(config, DICT)[key]
+        return Dict.compose(*Dict.get_items_with_prefix(config, DICT))[key]
 
     def assertMapValue(self, config, key, result):
         self.assertEquals(self.computeMapValue(config, key), result)
