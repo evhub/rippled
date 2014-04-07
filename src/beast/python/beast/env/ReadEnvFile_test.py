@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from unittest import TestCase
-from beast.util.ReadEnvFile import read_env_file
+from beast.env.ReadEnvFile import read_env_file
 
 JSON = """
 {
@@ -40,4 +40,3 @@ class test_ReadEnvFile(TestCase):
         "WARNING: Didn't understand the following environment file lines:",
         "10. >>> This line isn't right.",
         '11. >>> NO SPACES IN NAMES="valid value"'])
-

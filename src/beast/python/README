@@ -1,7 +1,10 @@
-Python code for scons.
+Python code for the beast and scons.
 
-To run the tests, type:
+Scripts you can run from this directory.
 
-    python -m unittest discover -p \*_test.py
+./run-tests.sh
+  Runs the unit tests.
 
-in this directory.
+./clean-python.sh
+  If you remove or rename any Python files, you should run this script to
+  prevent old .pyc files from hiding bugs.

@@ -1,10 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import curses
-import ntpath
 import os
 import sys
-import textwrap
 
 def add_beast_to_path():
     python_home = os.path.join(os.getcwd(), 'python')
@@ -19,7 +16,7 @@ from beast.util import File
 from beast.util import Print
 from beast.util import Tests
 
-from beast.util.Environment import fill_environment
+from beast.env.Environment import fill_environment
 
 VARIANT_DIRECTORIES = {
     'beast': ('bin', 'beast'),
@@ -31,10 +28,8 @@ BOOST_LIBRARIES = 'boost_system',
 MAIN_PROGRAM_FILE = 'beast/unit_test/tests/main.cpp'
 
 def main():
-    #arguments = SConsArgs.parse(ARGUMENTS, DEFAULT_ARGUMENTS)
-    #print(arguments)
     File.validate_libraries(Boost.LIBRARY_PATH, BOOST_LIBRARIES)
-    defaults = GetEnvironment.get_environment([])
+    defaults = GetEnvironment.get_environment(ARGUMENTS)
     env = Environment()
     fill_environment(env,
                      appends={'LIBPATH': Boost.LIBRARY_PATH},
