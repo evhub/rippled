@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from beast.util.Terminal import warn
+
 def is_string(s):
     """Is s a string? - in either Python 2.x or 3.x."""
     return isinstance(s, (str, unicode))
@@ -42,6 +44,6 @@ def remove_quotes(line, quote='"', print=print):
     if line.endswith(quote):
         return line[1:-1]
 
-    print('WARNING: line started with %s but didn\'t end with one:' % quote)
+    warn('line started with %s but didn\'t end with one:' % quote, print)
     print(line)
     return line[1:]

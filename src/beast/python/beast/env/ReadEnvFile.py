@@ -4,8 +4,9 @@ import json
 import re
 
 from beast.util import String
+from beast.util.Terminal import warn
 
-ENV_LINE_MATCH = re.compile(r'(?: export \s+)? \s* (\S*) \s* = (.*)',
+ENV_LINE_MATCH = re.compile(r'(?: export \s+)? \s* ([^=\s]*) \s* = (.*)',
                             re.VERBOSE)
 
 def read_env_file(data, print=print):
@@ -26,7 +27,7 @@ def read_env_file(data, print=print):
             else:
                 bad_lines.append([number, raw_line])
     if bad_lines:
-         print("WARNING: Didn't understand the following environment file lines:")
+         warn("Didn't understand the following environment file lines:", print)
          for number, line in bad_lines:
              print('%d. >>> %s' % (number + 1, line))
 

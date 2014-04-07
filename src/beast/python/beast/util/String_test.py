@@ -3,6 +3,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from unittest import TestCase
 
 from beast.util import String
+from beast.util import Terminal
+
+Terminal.CAN_CHANGE_COLOR = False
 
 class String_test(TestCase):
   def test_comments(self):

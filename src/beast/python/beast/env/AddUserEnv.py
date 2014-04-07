@@ -5,9 +5,10 @@ import shlex
 
 from beast.env.ReadEnvFile import read_env_file
 from beast.util.String import is_string
+from beast.util.Terminal import warn
 
 _BAD_VARS_ERROR = """
-WARNING: the following variables appearing in %s were not understood:
+the following variables appearing in %s were not understood:
   %s"""
 
 def add_user_env(env, dotfile, print=print):
@@ -17,7 +18,7 @@ def add_user_env(env, dotfile, print=print):
             dotvars = read_env_file(f.read())
     except IOError:
         if os.path.exists(df):
-            print("WARNING: Dotfile %s exists but can't be read.")
+            warn("Dotfile %s exists but can't be read." % dotfile, print)
         dotvars = {}
 
     bad_names = []
@@ -26,9 +27,12 @@ def add_user_env(env, dotfile, print=print):
             if is_string(env[name]):
                 env[name] = value
             else:
-                bad_names.append(name)
+                env[name] = shlex.split(value)
+        else:
+            bad_names.append(name)
     if bad_names:
-        print(_BAD_VARS_ERROR % (dotfile, '\n  '.join(bad_names)))
+        error = _BAD_VARS_ERROR % (dotfile, '\n  '.join(bad_names))
+        warn(error, print)
 
     for name, default in env.items():
         env[name] = os.environ.get(name, default)

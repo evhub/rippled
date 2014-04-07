@@ -21,7 +21,7 @@ DISPLAY_EMPTY_ENVS = True
 def print_build_vars(name, value, same, print=print):
     """Pretty-print values as a build configuration."""
     name = '%s' % name.rjust(FIELD_WIDTH)
-    color = Terminal.blue if same else Terminal.red
+    color = Terminal.blue if same else Terminal.green
 
     for line in TEXT_WRAPPER.wrap(String.stringify(value, ' ')):
         print(' '.join([name, color(line)]))
