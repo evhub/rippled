@@ -12,8 +12,9 @@ _DEFAULTS = {
         'CFLAGS': None,
         'CXX': 'g++',
         'CPPFLAGS': '-std=c++11 -frtti -fno-strict-aliasing',
-        'LIBPATH': '',
-        'LIBS': '',
+        'CPPPATH': [],
+        'LIBPATH': [],
+        'LIBS': [],
         'LINKFLAGS': '',
     },
 

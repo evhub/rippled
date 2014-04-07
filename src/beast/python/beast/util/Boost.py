@@ -57,5 +57,5 @@ def _boost_path():
     _validate_version(_get_version_number(path))
     return path
 
-PATH = _boost_path()
-LIBRARY_PATH = os.path.join(PATH, *LIBRARY_PATH_SEGMENT)
+CPPPATH = _boost_path()
+LIBPATH = os.path.join(CPPPATH, *LIBRARY_PATH_SEGMENT)
