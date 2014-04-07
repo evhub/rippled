@@ -16,14 +16,11 @@ add_beast_to_path()
 from beast.platform import GetEnvironment
 from beast.util import Boost
 from beast.util import File
-from beast.util import String
-from beast.util import SConsArgs
-from beast.util import Terminal
+from beast.util import Print
 from beast.util import Tests
 
 from beast.util.Environment import fill_environment
 
-ENVIRONMENT_VARIABLES = GetEnvironment.DEFAULTS['']
 VARIANT_DIRECTORIES = {
     'beast': ('bin', 'beast'),
     'modules': ('bin', 'modules'),
@@ -32,50 +29,20 @@ VARIANT_DIRECTORIES = {
 BOOST_LIBRARIES = 'boost_system',
 
 MAIN_PROGRAM_FILE = 'beast/unit_test/tests/main.cpp'
-FIELD_WIDTH = 10
-LINE_WIDTH = 69
-
-EMPTY_NAME = ' ' * FIELD_WIDTH
-
-TEXT_WRAPPER = textwrap.TextWrapper(
-    break_long_words=False,
-    break_on_hyphens=False,
-    width=LINE_WIDTH,
-)
-
-DISPLAY_EMPTY_ENVS = True
-
-def print_build_vars(env, name, value):
-    """Pretty-print values as a build configuration."""
-    name = '%s' % name.rjust(FIELD_WIDTH)
-
-    for line in TEXT_WRAPPER.wrap(String.stringify(value, ' ')):
-        print(' '.join([name, Terminal.blue(line)]))
-        name = EMPTY_NAME
-
-def print_build_config(env):
-    print('\nConfiguration:')
-    for name, default in ENVIRONMENT_VARIABLES.items():
-        value = env.get(name)
-        if value or DISPLAY_EMPTY_ENVS:
-           print_build_vars(env, name, value)
-    print()
-
-def print_cmd_line(s, target, source, env):
-    print(EMPTY_NAME + Terminal.blue(String.stringify(target)))
 
 def main():
     #arguments = SConsArgs.parse(ARGUMENTS, DEFAULT_ARGUMENTS)
     #print(arguments)
     File.validate_libraries(Boost.LIBRARY_PATH, BOOST_LIBRARIES)
+    defaults = GetEnvironment.get_environment([])
     env = Environment()
     fill_environment(env,
                      appends={'LIBPATH': Boost.LIBRARY_PATH},
-                     environment_variables=ENVIRONMENT_VARIABLES,
+                     environment_variables=defaults,
                      prepends={'CPPPATH': Boost.PATH},
-                     replacements={'PRINT_CMD_LINE_FUNC': print_cmd_line},
+                     replacements={'PRINT_CMD_LINE_FUNC': Print.print_cmd_line},
                      variant_directories=VARIANT_DIRECTORIES)
-    print_build_config(env)
+    Print.print_build_config(env, defaults)
     Tests.run_tests(env, MAIN_PROGRAM_FILE, '.', '.test.cpp')
 
 main()

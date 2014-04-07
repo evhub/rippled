@@ -12,3 +12,6 @@ def get_items_with_prefix(key, mapping):
     for k, v in sorted(mapping.items()):
         if key.startswith(k):
             yield v
+
+def compose_prefix_dicts(key, mapping):
+    return compose(*get_items_with_prefix(key, mapping))
