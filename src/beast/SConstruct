@@ -16,8 +16,6 @@ from beast.util import File
 from beast.util import Print
 from beast.util import Tests
 
-from beast.env.Environment import fill_environment
-
 VARIANT_DIRECTORIES = {
     'beast': ('bin', 'beast'),
     'modules': ('bin', 'modules'),
@@ -31,12 +29,18 @@ def main():
     File.validate_libraries(Boost.LIBRARY_PATH, BOOST_LIBRARIES)
     defaults = GetEnvironment.get_environment(ARGUMENTS)
     env = Environment()
-    fill_environment(env,
-                     appends={'LIBPATH': Boost.LIBRARY_PATH},
-                     environment_variables=defaults,
-                     prepends={'CPPPATH': Boost.PATH},
-                     replacements={'PRINT_CMD_LINE_FUNC': Print.print_cmd_line},
-                     variant_directories=VARIANT_DIRECTORIES)
+    for name, path in VARIANT_DIRECTORIES.items():
+        env.VariantDir(os.path.join(*path), name, duplicate=0)
+
+    for name, default in defaults.items():
+        value = os.environ.get(name, default)
+        if value:
+            env[name] = value
+
+    env.Replace(PRINT_CMD_LINE_FUNC=Print.print_cmd_line)
+    env.Prepend(CPPPATH=Boost.PATH)
+    env.Append(LIBPATH=Boost.LIBRARY_PATH)
+
     Print.print_build_config(env, defaults)
     Tests.run_tests(env, MAIN_PROGRAM_FILE, '.', '.test.cpp')
 
