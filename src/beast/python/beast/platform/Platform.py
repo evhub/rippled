@@ -7,7 +7,7 @@ def _get_platform_string():
     parts = [system]
     if system == 'Linux':
         flavor, version, _ = platform.linux_distribution()
-        parts.append(flavor)
+        parts.append(flavor.capitalize())
         parts.extend(version.split('.'))
     elif system == 'Darwin':
         ten, major, minor = platform.mac_ver()[0].split('.')
