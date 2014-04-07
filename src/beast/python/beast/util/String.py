@@ -1,15 +1,19 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 def is_string(s):
-  """Is s a string? - in either Python 2.x or 3.x."""
-  return isinstance(s, (str, unicode))
+    """Is s a string? - in either Python 2.x or 3.x."""
+    return isinstance(s, (str, unicode))
 
-def join(items, joiner=''):
-  """If items is not a string, stringify its members and join them."""
-  if not items or is_string(items):
-    return items or ''
-  else:
-    return joiner.join(str(i) for i in items)
+def stringify(item, joiner=''):
+    """If item is not a string, stringify its members and join them."""
+    try:
+        len(item)
+    except:
+        return str(item)
+    if not item or is_string(item):
+        return item or ''
+    else:
+        return joiner.join(str(i) for i in item)
 
 def single_line(line, report_errors=True, joiner='+'):
   """Force a string to be a single line with no carriage returns, and report
@@ -41,4 +45,3 @@ def remove_quotes(line, quote='"', print=print):
   print('WARNING: line started with %s but didn\'t end with one:' % quote)
   print(line)
   return line[1:]
-

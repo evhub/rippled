@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from ripple.platform.Platform import PLATFORM
+from beast.platform.Platform import PLATFORM
 
 DEFAULTS = {
     '': {
@@ -26,4 +26,3 @@ DEFAULTS = {
         'LINKFLAGS': '-stdlib=libc++',
     },
 }
-
