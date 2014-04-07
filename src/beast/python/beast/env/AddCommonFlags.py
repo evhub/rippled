@@ -8,3 +8,4 @@ def add_common_flags(env):
     env['CPPFLAGS'] = '%s %s' % (env['CPPFLAGS'], git_flag)
     env['CPPPATH'].insert(0, Boost.CPPPATH)
     env['LIBPATH'].append(Boost.LIBPATH)
+    env['BOOST_HOME'] = Boost.CPPPATH

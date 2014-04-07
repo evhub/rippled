@@ -9,6 +9,6 @@ def execute(args, include_errors=True, **kwds):
     it's split on spaces - if some of your arguments contain spaces, args should
     instead be a list of arguments."""
     if String.is_string(args):
-      args = args.split()
+        args = args.split()
     stderr = subprocess.STDOUT if include_errors else None
     return subprocess.check_output(args, stderr=stderr, **kwds)
