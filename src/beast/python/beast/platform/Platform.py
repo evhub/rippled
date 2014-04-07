@@ -13,7 +13,11 @@ def _get_platform_string():
         ten, major, minor = platform.mac_ver()[0].split('.')
         parts.extend([ten, major, minor])
     elif system == 'Windows':
-        raise Exception("TODO: Can't handle windows builds yet.")
+        release, version, csd, ptype = platform.win32_ver()
+        parts.extend([release, version, csd, ptype])
+    elif system == 'FreeBSD':
+        # No other variables to pass with FreeBSD that Python provides and I could find
+        pass
     else:
         raise Exception("Don't understand how to build for platform " + system)
     return '.'.join(parts)
