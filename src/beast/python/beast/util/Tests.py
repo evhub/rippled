@@ -10,8 +10,8 @@ MODS_PREFIX = '// MODULES:'
 def build_executable(env, path, main_program_file):
     """Build a stand alone executable that runs
        all the test suites in one source file."""
-    libs = File.first_line_starting_with(path, LIBS_PREFIX)
-    source_modules = File.first_line_starting_with(path, MODS_PREFIX)
+    libs = File.first_fields_after_prefix(path, LIBS_PREFIX)
+    source_modules = File.first_fields_after_prefix(path, MODS_PREFIX)
     source_modules = File.sibling_files(path, source_modules)
 
     bin = os.path.basename(os.path.splitext(path)[0])
@@ -29,4 +29,3 @@ def run_tests(env, main_program_file, root, suffix):
     root = os.path.normpath(root)
     for path in File.find_files_with_suffix(root, suffix):
         build_executable(env, path, main_program_file)
-

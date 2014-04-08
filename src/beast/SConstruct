@@ -17,6 +17,7 @@ from beast.env import Print
 from beast.platform import GetEnvironment
 from beast.util import Boost
 from beast.util import File
+from beast.util import OpenSSH
 from beast.util import Tests
 
 VARIANT_DIRECTORIES = {
@@ -29,6 +30,7 @@ MAIN_PROGRAM_FILE = 'beast/unit_test/tests/main.cpp'
 DOTFILE = '~/.ripple-scons'
 
 def main():
+    OpenSSH.validate_version()
     File.validate_libraries(Boost.LIBPATH, BOOST_LIBRARIES)
     defaults = GetEnvironment.get_environment(ARGUMENTS)
     working = copy.deepcopy(defaults)

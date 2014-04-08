@@ -1,5 +1,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import functools
+
+from beast.util import Iter
 from beast.util.Terminal import warn
 
 def is_string(s):
@@ -47,3 +50,11 @@ def remove_quotes(line, quote='"', print=print):
     warn('line started with %s but didn\'t end with one:' % quote, print)
     print(line)
     return line[1:]
+
+def fields_after_prefix(prefix, line):
+    line = line.strip()
+    return line.startswith(prefix) and line[len(prefix):].split()
+
+def first_fields_after_prefix(prefix, sequence):
+    condition = functools.partial(fields_after_prefix, prefix)
+    return Iter.first(condition, sequence) or []

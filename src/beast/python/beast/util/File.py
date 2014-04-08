@@ -1,16 +1,14 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from beast.util import String
+
 import os
 
 LIBRARY_PATTERN = 'lib%s.a'
 
-def first_line_starting_with(filename, prefix):
-    with open(filename, 'r') as contents:
-        for line in contents:
-            line = line.strip()
-            if line.startswith(prefix):
-                return line[len(prefix):].split()
-    return []
+def first_fields_after_prefix(filename, prefix):
+    with open(filename, 'r') as f:
+        return String.first_fields_after_prefix(prefix, f)
 
 def find_files_with_suffix(base, suffix):
     for parent, _, files in os.walk(base):
