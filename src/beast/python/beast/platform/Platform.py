@@ -8,7 +8,8 @@ def _get_platform_string():
     linux = system == 'Linux'
     if linux:
         flavor, version, _ = platform.linux_distribution()
-        parts[0] = flavor.capitalize() or 'Archlinux' # Arch still has issues with the platform module
+        # Arch still has issues with the platform module
+        parts[0] = flavor.capitalize() or 'Archlinux'
         parts.extend(version.split('.'))
     elif system == 'Darwin':
         ten, major, minor = platform.mac_ver()[0].split('.')
