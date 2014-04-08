@@ -11,13 +11,20 @@ import re
 import sys
 import textwrap
 
-OSX = bool(platform.mac_ver()[0])
-FreeBSD = bool('FreeBSD' == platform.system())
-Linux   = bool('Linux' == platform.system())
-Ubuntu  = bool(Linux and 'Ubuntu' == platform.linux_distribution()[0])
-Debian  = bool(Linux and 'debian' == platform.linux_distribution()[0])
-Fedora  = bool(Linux and 'Fedora' == platform.linux_distribution()[0])
-Archlinux  = bool(Linux and ('','','') == platform.linux_distribution()) #Arch still has issues with the platform module
+def add_beast_to_path():
+    python_home = os.path.join(os.getcwd(), 'beast', 'python')
+    if python_home not in sys.path:
+        sys.path.append(python_home)
+
+from beast.platform import Platform
+
+OSX = Platform.PLATFORM.startswith("Darwin")
+FreeBSD = Platform.PLATFORM.startswith("FreeBSD")
+Linux   = Platform.PLATFORM.startswith("Linux")
+Ubuntu  = Platform.PLATFORM.startswith("Linux.Ubuntu")
+Debian  = Platform.PLATFORM.startswith("Linux.Debian")
+Fedora  = Platform.PLATFORM.startswith("Linux.Fedora")
+Archlinux  = Platform.PLATFORM.startswith("Linux..") #Arch still has issues with the platform module
 
 USING_CLANG = OSX or os.environ.get('CC', None) == 'clang'
 
@@ -128,7 +135,7 @@ if not (USING_CLANG and Linux) and (FreeBSD or Ubuntu or Archlinux or Debian or 
     env.Append(
         LIBS = BOOST_LIBS
     )
-elif Linux and USING_CLANG and Ubuntu:
+elif USING_CLANG and Ubuntu:
     # It's likely going to be here if using boost 1.55 
     boost_statics = [ ("/usr/lib/x86_64-linux-gnu/lib%s.a" % a) for a in 
                       BOOST_LIBS ]
