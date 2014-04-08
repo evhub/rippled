@@ -5,9 +5,11 @@ import platform
 def _get_platform_string():
     system = platform.system()
     parts = [system]
+    linux = False
     if system == 'Linux':
+        linux = True
         flavor, version, _ = platform.linux_distribution()
-        parts.append(flavor.capitalize())
+        parts[0] = flavor.capitalize() or "Archlinux"
         parts.extend(version.split('.'))
     elif system == 'Darwin':
         ten, major, minor = platform.mac_ver()[0].split('.')
@@ -20,6 +22,6 @@ def _get_platform_string():
         pass
     else:
         raise Exception("Don't understand how to build for platform " + system)
-    return '.'.join(parts)
+    return '.'.join(parts), linux
 
-PLATFORM = _get_platform_string()
+PLATFORM, IS_LINUX = _get_platform_string()
