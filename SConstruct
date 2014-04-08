@@ -20,11 +20,11 @@ from beast.platform import Platform
 
 OSX = Platform.PLATFORM.startswith("Darwin")
 FreeBSD = Platform.PLATFORM.startswith("FreeBSD")
-Linux   = Platform.PLATFORM.startswith("Linux")
-Ubuntu  = Platform.PLATFORM.startswith("Linux.Ubuntu")
-Debian  = Platform.PLATFORM.startswith("Linux.Debian")
-Fedora  = Platform.PLATFORM.startswith("Linux.Fedora")
-Archlinux  = Platform.PLATFORM.startswith("Linux..") #Arch still has issues with the platform module
+Linux   = Platform.IS_LINUX
+Ubuntu  = Platform.PLATFORM.startswith("Ubuntu")
+Debian  = Platform.PLATFORM.startswith("Debian")
+Fedora  = Platform.PLATFORM.startswith("Fedora")
+Archlinux  = Platform.PLATFORM.startswith("Archlinux")
 
 USING_CLANG = OSX or os.environ.get('CC', None) == 'clang'
 
