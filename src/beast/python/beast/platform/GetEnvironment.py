@@ -25,6 +25,14 @@ _DEFAULTS = {
         'LINKFLAGS': '-stdlib=libc++',
      },
 
+    'FreeBSD': {
+        'CC': 'gcc46',
+        'CXX': 'g++46',
+        'CCFLAGS': '-Wl,-rpath=/usr/local/lib/gcc46',
+        'LINKFLAGS': '-Wl,-rpath=/usr/local/lib/gcc46',
+        'LIBS': ['kvm'],
+    },
+
     # TODO: specific flags for Windows, Linux platforms.
 }
 
