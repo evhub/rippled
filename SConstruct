@@ -12,7 +12,7 @@ import sys
 import textwrap
 
 def add_beast_to_path():
-    python_home = os.path.join(os.getcwd(), 'beast', 'python')
+    python_home = os.path.join(os.getcwd(), 'src', 'beast', 'python')
     if python_home not in sys.path:
         sys.path.append(python_home)
 
