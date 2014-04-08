@@ -8,6 +8,8 @@ REQUIRED_VERSION = '1.0.1'
 MATCH_VERSION = re.compile(r'#define\s+OPENSSL_VERSION_NUMBER\s+(\S+)')
 DEFAULT_SSH_FILE = '/usr/include/openssl/opensslv.h'
 
+DISABLED = True
+
 def parse_version_number(version):
     try:
         ox = version[:2]
@@ -54,6 +56,8 @@ def to_string(version):
     return '.'.join(str(s) for s in version[:-1]) + version[-1]
 
 def validate_version(required_version=REQUIRED_VERSION, filename=DEFAULT_SSH_FILE):
+    if DISABLED:
+        return
     required_version = split_version_string(required_version)
     version = get_version(filename)
     if version < required_version:
