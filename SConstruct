@@ -16,6 +16,8 @@ def add_beast_to_path():
     if python_home not in sys.path:
         sys.path.append(python_home)
 
+add_beast_to_path()
+
 from beast.platform import Platform
 
 OSX = Platform.PLATFORM.startswith("Darwin")
