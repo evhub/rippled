@@ -1,8 +1,14 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import curses
+import sys
 
-CAN_CHANGE_COLOR = True
+from beast.platform import Platform.PLATFORM
+
+CAN_CHANGE_COLOR = (
+    hasattr(sys.stderr, "isatty")
+    and sys.stderr.isatty()
+    and not Plaform.PLATFORM.startwith('Windows')
+# See https://stackoverflow.com/questions/7445658/how-to-detect-if-the-console-does-support-ansi-escape-codes-in-python
 
 # See https://en.wikipedia.org/wiki/ANSI_escape_code
 

@@ -33,7 +33,7 @@ USING_CLANG = OSX or os.environ.get('CC', None) == 'clang'
 #
 # We expect this to be set
 #
-BOOST_HOME = os.environ.get("RIPPLED_BOOST_HOME", None)
+BOOST_HOME = os.environ.get("RIPPLED_BOOST_HOME")
 
 if OSX or Ubuntu or Debian or Archlinux:
     CTAGS = 'ctags'
@@ -78,7 +78,7 @@ if USING_CLANG:
         env.Append(LINKFLAGS='-stdlib=libstdc++')
 
     if OSX:
-        env.Append(CXXFLAGS = ['-std=c++11', '-stdlib=libc++', 
+        env.Append(CXXFLAGS = ['-std=c++11', '-stdlib=libc++',
                                '-Wno-deprecated-register'])
         env.Append(LINKFLAGS='-stdlib=libc++')
         env['FRAMEWORKS'] = ['AppKit','Foundation']
@@ -138,14 +138,14 @@ if not (USING_CLANG and Linux) and (FreeBSD or Ubuntu or Archlinux or Debian or 
         LIBS = BOOST_LIBS
     )
 elif USING_CLANG and Ubuntu:
-    # It's likely going to be here if using boost 1.55 
-    boost_statics = [ ("/usr/lib/x86_64-linux-gnu/lib%s.a" % a) for a in 
+    # It's likely going to be here if using boost 1.55
+    boost_statics = [ ("/usr/lib/x86_64-linux-gnu/lib%s.a" % a) for a in
                       BOOST_LIBS ]
 
     if not all(os.path.exists(f) for f in boost_statics):
         # Else here
         boost_statics = [("/usr/lib/lib%s.a" % a) for a in BOOST_LIBS]
-    
+
     env.Append(LIBS = [File(f) for f in boost_statics])
 else:
     env.Append(
@@ -276,6 +276,7 @@ COMPILED_FILES.extend([
     'src/ripple_app/ripple_app_pt8.cpp',
     'src/ripple_app/ripple_app_pt9.cpp',
     'src/ripple_basics/ripple_basics.cpp',
+    'src/ripple_basics/system/CheckLibraryVersions.cpp',
     'src/ripple_core/ripple_core.cpp',
     'src/ripple_data/ripple_data.cpp',
     'src/ripple_hyperleveldb/ripple_hyperleveldb.cpp',
@@ -406,7 +407,7 @@ def print_nv_pair(n, v):
 
 def print_build_config(var):
     val = env.get(var, '')
-    
+
     if val and val != '':
         name = ("%s" % var.rjust(10))
 
@@ -440,7 +441,7 @@ if TravisBuild:
 
     if (Slug):
         print_nv_pair ("Repo", Slug)
-        
+
     if (Branch):
         print_nv_pair ("Branch", Branch)
 
