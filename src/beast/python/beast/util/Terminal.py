@@ -2,16 +2,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import sys
 
-from beast.platform import Platform.PLATFORM
+from beast.platform.Platform import PLATFORM
 
+# See https://stackoverflow.com/questions/7445658/how-to-detect-if-the-console-does-support-ansi-escape-codes-in-python
 CAN_CHANGE_COLOR = (
     hasattr(sys.stderr, "isatty")
     and sys.stderr.isatty()
-    and not Plaform.PLATFORM.startwith('Windows')
-# See https://stackoverflow.com/questions/7445658/how-to-detect-if-the-console-does-support-ansi-escape-codes-in-python
+    and not PLATFORM.startswith('Windows'))
+
 
 # See https://en.wikipedia.org/wiki/ANSI_escape_code
-
 RED = 91
 GREEN = 92
 BLUE = 94

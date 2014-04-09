@@ -38,7 +38,11 @@ _DEFAULTS = {
 
 TAGS = {
     'debug': {
-        'CPPFLAGS': '-g'
+        'CPPFLAGS': '-g -DDEBUG'
+        },
+
+    'nodebug': {
+        'CPPFLAGS': '-DDEBUG'
         },
 
     'optimize': {
