@@ -2,6 +2,8 @@
 # Ripple - SConstruct
 #
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import commands
 import copy
 import glob
@@ -77,7 +79,7 @@ if USING_CLANG:
         env.Append(CXXFLAGS = ['-std=c++11', '-stdlib=libstdc++'])
         env.Append(LINKFLAGS='-stdlib=libstdc++')
 
-    if OSX:
+    elif OSX:
         env.Append(CXXFLAGS = ['-std=c++11', '-stdlib=libc++',
                                '-Wno-deprecated-register'])
         env.Append(LINKFLAGS='-stdlib=libc++')
@@ -360,12 +362,12 @@ https://ripple.com/wiki/Ubuntu_build_instructions#Ubuntu_versions_older_than_13.
 
 if not USING_CLANG:
     if (int(GCC_VERSION[0]) == 4 and int(GCC_VERSION[1]) < 8):
-        print "\n\033[91mTo compile rippled using GCC you need version 4.8.1 or later.\033[0m\n"
+        print("\n\033[91mTo compile rippled using GCC you need version 4.8.1 or later.\033[0m\n")
 
         if Ubuntu:
-          print "For information how to update your GCC, please visit:"
-          print UBUNTU_GCC_48_INSTALL_STEPS
-          print "\n"
+          print("For information how to update your GCC, please visit:")
+          print(UBUNTU_GCC_48_INSTALL_STEPS)
+          print("\n")
 
         sys.exit(1)
     else:
@@ -375,7 +377,7 @@ if not USING_CLANG:
 if FreeBSD:
     env.Append(CPPFLAGS = ['-DMDB_DSYNC=O_SYNC'])
 
-if OSX:
+elif OSX:
     env.Append(LINKFLAGS = ['-L/usr/local/opt/openssl/lib'])
     env.Append(CXXFLAGS = ['-I/usr/local/opt/openssl/include'])
 
