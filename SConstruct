@@ -36,8 +36,8 @@ USING_CLANG = OSX or os.environ.get('CC', None) == 'clang'
 # We expect this to be set
 #
 BOOST_HOME = (
-    os.environ.get("BOOST_ROOT", None) #The stanrd enviro var: this one is preferred
-    or os.environ.get("BOOST_HOME", None) #The current enviro var in beast: this will be deprecated
+    os.environ.get("BOOST_ROOT", None) #The standard enviro var: this one is preferred
+    or os.environ.get("BOOST_HOME", None) #The old beast enviro var: this will be deprecated
     or os.environ.get("RIPPLED_BOOST_HOME", None) #The old enviro var: this will be deprecated
     )
 
