@@ -35,7 +35,11 @@ USING_CLANG = OSX or os.environ.get('CC', None) == 'clang'
 #
 # We expect this to be set
 #
-BOOST_HOME = os.environ.get("RIPPLED_BOOST_HOME")
+BOOST_HOME = (
+            os.environ.get("RIPPLED_BOOST_HOME", None) #The old enviro var: this will be deprecated
+            or os.environ.get("BOOST_HOME", None) #The current enviro var in beast: this will also be deprecated
+            or os.environ.get("BOOST_ROOT", None) #The preferred enviro var: this one is the most standard
+            )
 
 if OSX or Ubuntu or Debian or Archlinux:
     CTAGS = 'ctags'
