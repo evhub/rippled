@@ -25,6 +25,7 @@ _DEFAULTS = {
         'LINKFLAGS': '-stdlib=libc++ -L/usr/local/opt/openssl/lib',
         'CXXFLAGS': '-I/usr/local/opt/openssl/include',
         'LIBS': ['z'],
+        'FRAMEWORKS': ['Appkit', 'Foundation'],
      },
 
     'FreeBSD': {
