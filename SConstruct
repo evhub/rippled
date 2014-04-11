@@ -387,22 +387,32 @@ elif OSX:
 TravisBuild = (os.environ.get('TRAVIS', '0') == 'true') and \
               (os.environ.get('CI', '0') == 'true')
 
-RippleRepository = False
-
 # Determine if we're building against the main ripple repo or a developer repo
 if TravisBuild:
     Slug = os.environ.get('TRAVIS_REPO_SLUG', '')
 
-    if (Slug.find ("ripple/") == 0):
-        RippleRepository = True
+    Branch = os.environ.get('TRAVIS_BRANCH', None)
+    Commit = os.environ.get('TRAVIS_COMMIT', None)
 
-if TravisBuild:
     env.Append(CFLAGS = ['-DTRAVIS_CI_BUILD'])
     env.Append(CXXFLAGS = ['-DTRAVIS_CI_BUILD'])
 
-if RippleRepository:
-    env.Append(CFLAGS = ['-DRIPPLE_MASTER_BUILD'])
-    env.Append(CXXFLAGS = ['-DRIPPLE_MASTER_BUILD'])
+    sys.stdout.write("\nBuild Type:\n")
+    if Slug.startswith ("ripple/"): # if this is the main ripple repo:
+        env.Append(CFLAGS = ['-DRIPPLE_MASTER_BUILD'])
+        env.Append(CXXFLAGS = ['-DRIPPLE_MASTER_BUILD'])
+        print_nv_pair ("Build", "Travis - Ripple Master Repository")
+    else:
+        print_nv_pair ("Build", "Travis - Ripple Developer Fork")
+
+    if Slug:
+        print_nv_pair ("Repo", Slug)
+
+    if Branch:
+        print_nv_pair ("Branch", Branch)
+
+    if Commit:
+        print_nv_pair ("Commit", Commit)
 
 # Display build configuration information for debugging purposes
 def print_nv_pair(n, v):
@@ -430,27 +440,6 @@ def print_build_config(var):
             name = "          "
 
 config_vars = ['CC', 'CXX', 'CFLAGS', 'CPPFLAGS', 'CXXFLAGS', 'LINKFLAGS', 'LIBS']
-
-if TravisBuild:
-    Slug = os.environ.get('TRAVIS_REPO_SLUG', None)
-    Branch = os.environ.get('TRAVIS_BRANCH', None)
-    Commit = os.environ.get('TRAVIS_COMMIT', None)
-
-    sys.stdout.write("\nBuild Type:\n")
-
-    if (Slug.find ("ripple/") == 0):
-        print_nv_pair ("Build", "Travis - Ripple Master Repository")
-    else:
-        print_nv_pair ("Build", "Travis - Ripple Developer Fork")
-
-    if (Slug):
-        print_nv_pair ("Repo", Slug)
-
-    if (Branch):
-        print_nv_pair ("Branch", Branch)
-
-    if (Commit):
-        print_nv_pair ("Commit", Commit)
 
 sys.stdout.write("\nConfiguration:\n")
 
