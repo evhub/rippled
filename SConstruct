@@ -323,13 +323,11 @@ if Linux: # not FreeBSD:
     )
 
 env.Append(
-    LIBS = \
+    LIBS = (
         # rt is for clock_nanosleep in beast
-        ['rt'] if not OSX else [] +\
-        [
-            'z'
-        ]
-)
+        ['rt'] if not OSX else ['z']
+        )
+    )
 
 # We prepend, in case there's another BOOST somewhere on the path
 # such, as installed into `/usr/lib/`
