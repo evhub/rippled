@@ -22,8 +22,9 @@ _DEFAULTS = {
         'CC': 'clang',
         'CXX': 'clang++',
         'CPPFLAGS': '-x c++ -stdlib=libc++ -std=c++11 -frtti',
-        'LINKFLAGS': '-stdlib=libc++',
-        'LIBS': ['z']
+        'LINKFLAGS': '-stdlib=libc++ -L/usr/local/opt/openssl/lib',
+        'CXXFLAGS': '-I/usr/local/opt/openssl/include',
+        'LIBS': ['z'],
      },
 
     'FreeBSD': {
@@ -31,6 +32,7 @@ _DEFAULTS = {
         'CXX': 'g++46',
         'CCFLAGS': '-Wl,-rpath=/usr/local/lib/gcc46',
         'LINKFLAGS': '-Wl,-rpath=/usr/local/lib/gcc46',
+        'CPPFLAGS': '-DMDB_DSYNC=O_SYNC',
         'LIBS': ['kvm'],
     },
 
