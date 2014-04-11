@@ -14,7 +14,7 @@ _DEFAULTS = {
         'CPPFLAGS': '-std=c++11 -frtti -fno-strict-aliasing',
         'CPPPATH': [],
         'LIBPATH': [],
-        'LIBS': [],
+        'LIBS': ['rt'],
         'LINKFLAGS': '',
     },
 
@@ -23,6 +23,7 @@ _DEFAULTS = {
         'CXX': 'clang++',
         'CPPFLAGS': '-x c++ -stdlib=libc++ -std=c++11 -frtti',
         'LINKFLAGS': '-stdlib=libc++',
+        'LIBS': ['z']
      },
 
     'FreeBSD': {
