@@ -430,7 +430,7 @@ def print_build_config(var):
         wrapper.break_on_hyphens = False
         wrapper.width = 69
 
-        if type(val) is str:
+        if isinstance(val, (str, unicode)):
             lines = wrapper.wrap(val)
         else:
             lines = wrapper.wrap(" ".join(str(x) for x in val))
