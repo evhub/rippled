@@ -270,6 +270,34 @@ def config_base(env):
     except KeyError:
         pass
 
+    # Hack to get protocol buffers compiling under XCode.  For some
+    # reason XCode loses the user's environment, so I'm cramming the
+    # include path down its throat using an environment variable
+    try:
+        RIPPLED_EXTRA_CPPPATH = os.path.normpath(os.environ
+                                                ['RIPPLED_EXTRA_CPPPATH'])
+        print('Adding to CPPPATH')
+        env.Append(CPPPATH=[
+            RIPPLED_EXTRA_CPPPATH,
+            ])
+        env['RIPPLED_EXTRA_CPPPATH'] = RIPPLED_EXTRA_CPPPATH
+    except KeyError:
+        pass
+
+    # Same problem as above (protocol buffers) except this time we'll fix
+    # the library path
+    try:
+        RIPPLED_EXTRA_LIBPATH = os.path.normpath(os.environ
+                                                ['RIPPLED_EXTRA_LIBPATH'])
+        print('Adding to LIBPATH')
+        env.Append(LIBPATH=[
+            RIPPLED_EXTRA_LIBPATH,
+            ])
+        env['RIPPLED_EXTRA_LIBPATH'] = RIPPLED_EXTRA_LIBPATH
+    except KeyError:
+        pass
+
+
     if Beast.system.windows:
         try:
             OPENSSL_ROOT = os.path.normpath(os.environ['OPENSSL_ROOT'])
