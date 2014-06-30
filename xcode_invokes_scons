@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo "invoke_scons"
+
+# XCode doesn't bring in the user's environment, so we must reconstruct
+# selected parts.
+export PATH=$PATH:/usr/local/bin
+export BOOST_ROOT=/Users/ScottsLaptop/Development/Boost/boost_1_55_0
+
+# The next two lines let XCode build protocol buffers.  
+export RIPPLED_EXTRA_CPPPATH=/usr/local/include
+export RIPPLED_EXTRA_LIBPATH=/usr/local/lib
+
+scons
+echo "scons exit value: " $?
+exit
