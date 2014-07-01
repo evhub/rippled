@@ -592,7 +592,7 @@ class _ProjectGenerator(object):
         self.project_file = None
         self.filters_node = filters_node
         self.filters_file = None
-        self.guid = _guid(os.path.basename(str(self.project_node)))
+        self.guid = _guid(os.path.basename(os.path.normpath(str(self.project_node))))
         self.buildItemList(env)
 
     def buildItemList(self, env):
