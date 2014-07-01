@@ -58,6 +58,62 @@ import Beast
 
 #------------------------------------------------------------------------------
 
+def _ram():
+    if sys.platform == 'win32':
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        c_ulong = ctypes.c_ulong
+        class memory(ctypes.Structure):
+            _fields_ = [
+                ('dwLength', c_ulong),
+                ('dwMemoryLoad', c_ulong),
+                ('dwTotalPhys', c_ulong),
+                ('dwAvailPhys', c_ulong),
+                ('dwTotalPageFile', c_ulong),
+                ('dwAvailPageFile', c_ulong),
+                ('dwTotalVirtual', c_ulong),
+                ('dwAvailVirtual', c_ulong)
+            ]
+        status = memory()
+        status.dwLength = ctypes.sizeof(memory)
+        kernel32.GlobalMemoryStatus(ctypes.byref(status))
+        return (status.dwTotalPhys, status.dwAvailPhys)
+    elif 'linux' in sys.platform:
+        mem = open('/proc/meminfo', 'rb')
+        try:
+            tmp = 0
+            for i in mem:
+                sline = i.split()
+                if str(sline[0]) == 'MemTotal:':
+                    total = int(sline[1])
+                elif str(sline[0]) in ('MemFree:', 'Buffers:', 'Cached:'):
+                    tmp += int(sline[1])
+        finally:
+            mem.close()
+        return (total, tmp)
+    elif sys.platform in ['darwin', 'mac']:
+        psLines = subprocess.check_output(['ps', '-caxm', '-orss,comm']).splitlines()
+        vmLines = subprocess.check_output(['vm_stat']).splitlines()
+        sep = re.compile('[\s]+')
+        rssTotal = 0
+        for row in range(1, len(psLines)):
+            rowText = psLines[row].strip()
+            rowElements = sep.split(rowText)
+            try:
+                rss = float(rowElements[0]) * 1024
+            except:
+                rss = 0
+            rssTotal += rss
+        sep = re.compile(':[\s]+')
+        vmStats = {}
+        for row in range(1,len(vmLines)-2):
+            rowText = vmLines[row].strip()
+            rowElements = sep.split(rowText)
+            vmStats[(rowElements[0])] = int(rowElements[1].strip('\.')) * 4096
+        return (rssTotal/1024/1024, vmStats["Pages free"]/1024/1024)
+    else:
+        return (float("inf"), float("inf"))
+
 def parse_time(t):
     return time.strptime(t, '%a %b %d %H:%M:%S %Z %Y')
 
