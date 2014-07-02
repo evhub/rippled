@@ -557,6 +557,8 @@ class Item(object):
 #-------------------------------------------------------------------------------
 
 def _guid(seed, name = None):
+    print "Seed: "+str(seed)
+    print "Name: "+str(name)
     m = hashlib.md5()
     m.update(seed)
     if name:
