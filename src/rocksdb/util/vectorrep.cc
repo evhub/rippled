@@ -91,9 +91,6 @@ class VectorRep : public MemTableRep {
     virtual void SeekToLast() override;
   };
 
-  // Unhide default implementations of GetIterator()
-  using MemTableRep::GetIterator;
-
   // Return an iterator over the keys in this representation.
   virtual MemTableRep::Iterator* GetIterator(Arena* arena) override;
 
@@ -252,7 +249,7 @@ void VectorRep::Get(const LookupKey& k, void* callback_args,
     bucket.reset(new Bucket(*bucket_));  // make a copy
   }
   VectorRep::Iterator iter(vector_rep, immutable_ ? bucket_ : bucket, compare_);
-  rwlock_.Unlock();
+  rwlock_.ReadUnlock();
 
   for (iter.Seek(k.user_key(), k.memtable_key().data());
        iter.Valid() && callback_func(callback_args, iter.key()); iter.Next()) {

@@ -55,30 +55,31 @@ TER rippleCalculate (
     PathState::List&  pathStateList,
 
     // Issuer:
-    //      XRP: xrpIssuer()
+    //      XRP: xrpAccount()
     //  non-XRP: uSrcAccountID (for any issuer) or another account with trust
     //           node.
-    const STAmount&     saMaxAmountReq,             // --> -1 = no limit.
+    STAmount const&     saMaxAmountReq,             // --> -1 = no limit.
 
     // Issuer:
-    //      XRP: xrpIssuer()
+    //      XRP: xrpAccount()
     //  non-XRP: uDstAccountID (for any issuer) or another account with trust
     //           node.
-    const STAmount&     saDstAmountReq,
+    STAmount const&     saDstAmountReq,
 
     Account const&      uDstAccountID,
     Account const&      uSrcAccountID,
 
     // A set of paths that are included in the transaction that we'll explore
     // for liquidity.
-    const STPathSet&    spsPaths,
-    const bool          bPartialPayment,
-    const bool          bLimitQuality,
-    const bool          bNoRippleDirect,
-    const bool          bStandAlone,
+    STPathSet const&    spsPaths,
+
+    bool const bPartialPayment,
+    bool const bLimitQuality,
+    bool const bNoRippleDirect,
+    bool const bStandAlone,
 
     // True, not to delete unfundeds.
-    const bool          bOpenLedger)
+    bool const          bOpenLedger)
 {
     assert (activeLedger.isValid ());
     RippleCalc  rc (activeLedger, bOpenLedger);

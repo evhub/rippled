@@ -270,6 +270,34 @@ def config_base(env):
     except KeyError:
         pass
 
+    # Hack to get protocol buffers compiling under XCode.  For some
+    # reason XCode loses the user's environment, so I'm cramming the
+    # include path down its throat using an environment variable
+    try:
+        RIPPLED_EXTRA_CPPPATH = os.path.normpath(os.environ
+                                                ['RIPPLED_EXTRA_CPPPATH'])
+        print('Adding to CPPPATH')
+        env.Append(CPPPATH=[
+            RIPPLED_EXTRA_CPPPATH,
+            ])
+        env['RIPPLED_EXTRA_CPPPATH'] = RIPPLED_EXTRA_CPPPATH
+    except KeyError:
+        pass
+
+    # Same problem as above (protocol buffers) except this time we'll fix
+    # the library path
+    try:
+        RIPPLED_EXTRA_LIBPATH = os.path.normpath(os.environ
+                                                ['RIPPLED_EXTRA_LIBPATH'])
+        print('Adding to LIBPATH')
+        env.Append(LIBPATH=[
+            RIPPLED_EXTRA_LIBPATH,
+            ])
+        env['RIPPLED_EXTRA_LIBPATH'] = RIPPLED_EXTRA_LIBPATH
+    except KeyError:
+        pass
+
+
     if Beast.system.windows:
         try:
             OPENSSL_ROOT = os.path.normpath(os.environ['OPENSSL_ROOT'])
@@ -302,11 +330,14 @@ def config_env(toolchain, variant, env):
             env.ParseConfig('pkg-config --static --cflags --libs openssl')
             env.ParseConfig('pkg-config --static --cflags --libs protobuf')
 
+        env.Prepend(CFLAGS=['-Wall'])
+        env.Prepend(CXXFLAGS=['-Wall'])
+
         env.Append(CCFLAGS=[
-            '-Wall',
             '-Wno-sign-compare',
             '-Wno-char-subscripts',
             '-Wno-format',
+            '-Wno-deprecated-register'
             ])
 
         env.Append(CXXFLAGS=[
@@ -328,9 +359,10 @@ def config_env(toolchain, variant, env):
                 '-Wno-unused-function',
                 ])
         else:
-            env.Append(CCFLAGS=[
-                '-Wno-unused-but-set-variable'
-                ])
+            if toolchain == 'gcc':
+                env.Append(CCFLAGS=[
+                    '-Wno-unused-but-set-variable'
+                    ])
 
         boost_libs = [
             'boost_date_time',
@@ -386,7 +418,6 @@ def config_env(toolchain, variant, env):
             # Add '-Wshorten-64-to-32'
             env.Append(CCFLAGS=[])
             # C++ only
-            # Why is this only for clang?
             env.Append(CXXFLAGS=['-Wno-mismatched-tags'])
 
         elif toolchain == 'gcc':
@@ -544,7 +575,7 @@ for source in [
 # Declare the targets
 aliases = collections.defaultdict(list)
 msvc_configs = []
-for toolchain in ['gcc', 'clang', 'msvc']:
+for toolchain in all_toolchains:
     for variant in variants:
         # Configure this variant's construction environment
         env = base.Clone()

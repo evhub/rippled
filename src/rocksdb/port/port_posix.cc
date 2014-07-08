@@ -9,20 +9,23 @@
 
 #include "port/port_posix.h"
 
-#include <cstdlib>
 #include <stdio.h>
 #include <assert.h>
+#include <errno.h>
+#include <sys/time.h>
 #include <string.h>
+#include <cstdlib>
 #include "util/logging.h"
 
 namespace rocksdb {
 namespace port {
 
-static void PthreadCall(const char* label, int result) {
-  if (result != 0) {
+static int PthreadCall(const char* label, int result) {
+  if (result != 0 && result != ETIMEDOUT) {
     fprintf(stderr, "pthread %s: %s\n", label, strerror(result));
     abort();
   }
+  return result;
 }
 
 Mutex::Mutex(bool adaptive) {
@@ -83,6 +86,27 @@ void CondVar::Wait() {
 #endif
 }
 
+bool CondVar::TimedWait(uint64_t abs_time_us) {
+  struct timespec ts;
+  ts.tv_sec = abs_time_us / 1000000;
+  ts.tv_nsec = (abs_time_us % 1000000) * 1000;
+
+#ifndef NDEBUG
+  mu_->locked_ = false;
+#endif
+  int err = pthread_cond_timedwait(&cv_, &mu_->mu_, &ts);
+#ifndef NDEBUG
+  mu_->locked_ = true;
+#endif
+  if (err == ETIMEDOUT) {
+    return true;
+  }
+  if (err != 0) {
+    PthreadCall("timedwait", err);
+  }
+  return false;
+}
+
 void CondVar::Signal() {
   PthreadCall("signal", pthread_cond_signal(&cv_));
 }
@@ -99,7 +123,9 @@ void RWMutex::ReadLock() { PthreadCall("read lock", pthread_rwlock_rdlock(&mu_))
 
 void RWMutex::WriteLock() { PthreadCall("write lock", pthread_rwlock_wrlock(&mu_)); }
 
-void RWMutex::Unlock() { PthreadCall("unlock", pthread_rwlock_unlock(&mu_)); }
+void RWMutex::ReadUnlock() { PthreadCall("read unlock", pthread_rwlock_unlock(&mu_)); }
+
+void RWMutex::WriteUnlock() { PthreadCall("write unlock", pthread_rwlock_unlock(&mu_)); }
 
 void InitOnce(OnceType* once, void (*initializer)()) {
   PthreadCall("once", pthread_once(once, initializer));

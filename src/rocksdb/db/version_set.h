@@ -85,27 +85,22 @@ class Version {
                     MergeIteratorBuilder* merger_iter_builder);
 
   // Lookup the value for key.  If found, store it in *val and
-  // return OK.  Else return a non-OK status.  Fills *stats.
+  // return OK.  Else return a non-OK status.
   // Uses *operands to store merge_operator operations to apply later
   // REQUIRES: lock is not held
-  struct GetStats {
-    FileMetaData* seek_file;
-    int seek_file_level;
-  };
   void Get(const ReadOptions&, const LookupKey& key, std::string* val,
-           Status* status, MergeContext* merge_context, GetStats* stats,
+           Status* status, MergeContext* merge_context,
            bool* value_found = nullptr);
-
-  // Adds "stats" into the current state.  Returns true if a new
-  // compaction may need to be triggered, false otherwise.
-  // REQUIRES: lock is held
-  bool UpdateStats(const GetStats& stats);
 
   // Updates internal structures that keep track of compaction scores
   // We use compaction scores to figure out which compaction to do next
   // REQUIRES: If Version is not yet saved to current_, it can be called without
   // a lock. Once a version is saved to current_, call only with mutex held
   void ComputeCompactionScore(std::vector<uint64_t>& size_being_compacted);
+
+  // Update scores, pre-calculated variables. It needs to be called before
+  // applying the version to the version set.
+  void PrepareApply(std::vector<uint64_t>& size_being_compacted);
 
   // Reference count management (so Versions do not disappear out from
   // under live iterators)
@@ -193,13 +188,32 @@ class Version {
   int64_t MaxNextLevelOverlappingBytes();
 
   // Add all files listed in the current version to *live.
-  void AddLiveFiles(std::set<uint64_t>* live);
+  void AddLiveFiles(std::vector<FileDescriptor>* live);
 
   // Return a human readable string that describes this version's contents.
   std::string DebugString(bool hex = false) const;
 
   // Returns the version nuber of this version
   uint64_t GetVersionNumber() const { return version_number_; }
+
+  uint64_t GetAverageValueSize() const {
+    if (num_non_deletions_ == 0) {
+      return 0;
+    }
+    assert(total_raw_key_size_ + total_raw_value_size_ > 0);
+    assert(total_file_size_ > 0);
+    return total_raw_value_size_ / num_non_deletions_ * total_file_size_ /
+           (total_raw_key_size_ + total_raw_value_size_);
+  }
+
+  // REQUIRES: lock is held
+  // On success, "tp" will contains the table properties of the file
+  // specified in "file_meta".  If the file name of "file_meta" is
+  // known ahread, passing it by a non-null "fname" can save a
+  // file-name conversion.
+  Status GetTableProperties(std::shared_ptr<const TableProperties>* tp,
+                            const FileMetaData* file_meta,
+                            const std::string* fname = nullptr);
 
   // REQUIRES: lock is held
   // On success, *props will be populated with all SSTables' table properties.
@@ -230,6 +244,18 @@ class Version {
   bool PrefixMayMatch(const ReadOptions& options, Iterator* level_iter,
                       const Slice& internal_prefix) const;
 
+  // Update num_non_empty_levels_.
+  void UpdateNumNonEmptyLevels();
+
+  // The helper function of UpdateTemporaryStats, which may fill the missing
+  // fields of file_mata from its associated TableProperties.
+  // Returns true if it does initialize FileMetaData.
+  bool MaybeInitializeFileMetaData(FileMetaData* file_meta);
+
+  // Update the temporary stats associated with the current version.
+  // This temporary stats will be used in compaction.
+  void UpdateTemporaryStats(const VersionEdit* edit);
+
   // Sort all files for this version based on their file size and
   // record results in files_by_size_. The largest files are listed first.
   void UpdateFilesBySize();
@@ -241,11 +267,13 @@ class Version {
   const MergeOperator* merge_operator_;
   Logger* info_log_;
   Statistics* db_statistics_;
+  int num_levels_;              // Number of levels
+  int num_non_empty_levels_;    // Number of levels. Any level larger than it
+                                // is guaranteed to be empty.
   VersionSet* vset_;            // VersionSet to which this Version belongs
   Version* next_;               // Next version in linked list
   Version* prev_;               // Previous version in linked list
   int refs_;                    // Number of live refs to this version
-  int num_levels_;              // Number of levels
 
   // List of files per level, files in each level are arranged
   // in increasing order of keys
@@ -266,11 +294,7 @@ class Version {
   // that on a running system, we need to look at only the first
   // few largest files because a new version is created every few
   // seconds/minutes (because of concurrent compactions).
-  static const int number_of_files_to_sort_ = 50;
-
-  // Next file to compact based on seek stats.
-  FileMetaData* file_to_compact_;
-  int file_to_compact_level_;
+  static const size_t number_of_files_to_sort_ = 50;
 
   // Level that should be compacted next and its compaction score.
   // Score < 1 means compaction is not strictly needed.  These fields
@@ -288,6 +312,16 @@ class Version {
 
   Version(ColumnFamilyData* cfd, VersionSet* vset, uint64_t version_number = 0);
   FileIndexer file_indexer_;
+
+  // total file size
+  uint64_t total_file_size_;
+  // the total size of all raw keys.
+  uint64_t total_raw_key_size_;
+  // the total size of all raw values.
+  uint64_t total_raw_value_size_;
+  // total number of non-deletion entries
+  uint64_t num_non_deletions_;
+
 
   ~Version();
 
@@ -365,7 +399,7 @@ class VersionSet {
   // Arrange to reuse "file_number" unless a newer file number has
   // already been allocated.
   // REQUIRES: "file_number" was returned by a call to NewFileNumber().
-  void ReuseFileNumber(uint64_t file_number) {
+  void ReuseLogFileNumber(uint64_t file_number) {
     if (next_file_number_ == file_number + 1) {
       next_file_number_ = file_number;
     }
@@ -406,7 +440,7 @@ class VersionSet {
   Iterator* MakeInputIterator(Compaction* c);
 
   // Add all files listed in any live version to *live.
-  void AddLiveFiles(std::vector<uint64_t>* live_list);
+  void AddLiveFiles(std::vector<FileDescriptor>* live_list);
 
   // Return the approximate offset in the database of the data for
   // "key" as of version "v".

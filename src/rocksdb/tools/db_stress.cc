@@ -286,9 +286,6 @@ DEFINE_uint64(num_iterations, 10, "Number of iterations per MultiIterate run");
 static const bool FLAGS_num_iterations_dummy __attribute__((unused)) =
     RegisterFlagValidator(&FLAGS_num_iterations, &ValidateUint32Range);
 
-DEFINE_bool(disable_seek_compaction, false,
-            "Option to disable compation triggered by read.");
-
 namespace {
 enum rocksdb::CompressionType StringToCompressionType(const char* ctype) {
   assert(ctype);
@@ -1585,7 +1582,6 @@ class StressTest {
         FLAGS_level0_file_num_compaction_trigger;
     options_.compression = FLAGS_compression_type_e;
     options_.create_if_missing = true;
-    options_.disable_seek_compaction = FLAGS_disable_seek_compaction;
     options_.max_manifest_file_size = 10 * 1024;
     options_.filter_deletes = FLAGS_filter_deletes;
     if ((FLAGS_prefix_size == 0) == (FLAGS_rep_factory == kHashSkipList)) {
@@ -1595,7 +1591,7 @@ class StressTest {
     }
     switch (FLAGS_rep_factory) {
       case kHashSkipList:
-        options_.memtable_factory.reset(NewHashSkipListRepFactory());
+        options_.memtable_factory.reset(NewHashSkipListRepFactory(10000));
         break;
       case kSkipList:
         // no need to do anything
@@ -1677,19 +1673,15 @@ class StressTest {
         }
         cf_descriptors.emplace_back(name, ColumnFamilyOptions(options_));
       }
+      while (cf_descriptors.size() < (size_t)FLAGS_column_families) {
+        std::string name = std::to_string(new_column_family_name_.load());
+        new_column_family_name_++;
+        cf_descriptors.emplace_back(name, ColumnFamilyOptions(options_));
+        column_family_names_.push_back(name);
+      }
+      options_.create_missing_column_families = true;
       s = DB::Open(DBOptions(options_), FLAGS_db, cf_descriptors,
                    &column_families_, &db_);
-      if (s.ok()) {
-        while (s.ok() &&
-               column_families_.size() < (size_t)FLAGS_column_families) {
-          ColumnFamilyHandle* cf = nullptr;
-          std::string name = std::to_string(new_column_family_name_.load());
-          new_column_family_name_++;
-          s = db_->CreateColumnFamily(ColumnFamilyOptions(options_), name, &cf);
-          column_families_.push_back(cf);
-          column_family_names_.push_back(name);
-        }
-      }
       assert(!s.ok() || column_families_.size() ==
                             static_cast<size_t>(FLAGS_column_families));
     } else {

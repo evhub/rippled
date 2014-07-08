@@ -21,7 +21,15 @@ namespace rocksdb {
 uint64_t TotalFileSize(const std::vector<FileMetaData*>& files) {
   uint64_t sum = 0;
   for (size_t i = 0; i < files.size() && files[i]; i++) {
-    sum += files[i]->file_size;
+    sum += files[i]->fd.GetFileSize();
+  }
+  return sum;
+}
+
+uint64_t TotalCompensatedFileSize(const std::vector<FileMetaData*>& files) {
+  uint64_t sum = 0;
+  for (size_t i = 0; i < files.size() && files[i]; i++) {
+    sum += files[i]->compensated_file_size;
   }
   return sum;
 }
@@ -29,7 +37,8 @@ uint64_t TotalFileSize(const std::vector<FileMetaData*>& files) {
 Compaction::Compaction(Version* input_version, int level, int out_level,
                        uint64_t target_file_size,
                        uint64_t max_grandparent_overlap_bytes,
-                       bool seek_compaction, bool enable_compression,
+                       uint32_t output_path_id,
+                       CompressionType output_compression, bool seek_compaction,
                        bool deletion_compaction)
     : level_(level),
       out_level_(out_level),
@@ -38,8 +47,9 @@ Compaction::Compaction(Version* input_version, int level, int out_level,
       input_version_(input_version),
       number_levels_(input_version_->NumberLevels()),
       cfd_(input_version_->cfd_),
+      output_path_id_(output_path_id),
+      output_compression_(output_compression),
       seek_compaction_(seek_compaction),
-      enable_compression_(enable_compression),
       deletion_compaction_(deletion_compaction),
       grandparent_index_(0),
       seen_key_(false),
@@ -90,7 +100,7 @@ bool Compaction::IsDeletionCompaction() const { return deletion_compaction_; }
 void Compaction::AddInputDeletions(VersionEdit* edit) {
   for (int which = 0; which < 2; which++) {
     for (size_t i = 0; i < inputs_[which].size(); i++) {
-      edit->DeleteFile(level_ + which, inputs_[which][i]->number);
+      edit->DeleteFile(level_ + which, inputs_[which][i]->fd.GetNumber());
     }
   }
 }
@@ -127,7 +137,7 @@ bool Compaction::ShouldStopBefore(const Slice& internal_key) {
       icmp->Compare(internal_key,
                     grandparents_[grandparent_index_]->largest.Encode()) > 0) {
     if (seen_key_) {
-      overlapped_bytes_ += grandparents_[grandparent_index_]->file_size;
+      overlapped_bytes_ += grandparents_[grandparent_index_]->fd.GetFileSize();
     }
     assert(grandparent_index_ + 1 >= grandparents_.size() ||
            icmp->Compare(grandparents_[grandparent_index_]->largest.Encode(),
@@ -212,9 +222,9 @@ int InputSummary(const std::vector<FileMetaData*>& files, char* output,
     int sz = len - write;
     int ret;
     char sztxt[16];
-    AppendHumanBytes(files.at(i)->file_size, sztxt, 16);
-    ret = snprintf(output + write, sz, "%" PRIu64 "(%s) ", files.at(i)->number,
-                   sztxt);
+    AppendHumanBytes(files.at(i)->fd.GetFileSize(), sztxt, 16);
+    ret = snprintf(output + write, sz, "%" PRIu64 "(%s) ",
+                   files.at(i)->fd.GetNumber(), sztxt);
     if (ret < 0 || ret >= sz) break;
     write += ret;
   }
@@ -248,6 +258,22 @@ void Compaction::Summary(char* output, int len) {
   }
 
   snprintf(output + write, len - write, "]");
+}
+
+uint64_t Compaction::OutputFilePreallocationSize() {
+  uint64_t preallocation_size = 0;
+
+  if (cfd_->options()->compaction_style == kCompactionStyleLevel) {
+    preallocation_size =
+        cfd_->compaction_picker()->MaxFileSizeForLevel(output_level());
+  } else {
+    for (const auto& f : inputs_[0]) {
+      preallocation_size += f->fd.GetFileSize();
+    }
+  }
+  // Over-estimate slightly so we don't end up just barely crossing
+  // the threshold
+  return preallocation_size * 1.1;
 }
 
 }  // namespace rocksdb

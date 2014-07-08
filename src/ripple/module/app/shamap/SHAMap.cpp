@@ -114,11 +114,6 @@ void SHAMapNodeID::setMHash () const
     mHash = h;
 }
 
-std::size_t hash_value (const SHAMapNodeID& mn)
-{
-    return mn.getMHash ();
-}
-
 SHAMap::pointer SHAMap::snapShot (bool isMutable)
 {
     SHAMap::pointer ret = std::make_shared<SHAMap> (mType,
@@ -1009,6 +1004,8 @@ SHAMapTreeNode::pointer SHAMap::fetchNodeExternalNT (const SHAMapNodeID& id, uin
 {
     SHAMapTreeNode::pointer ret;
 
+    // This if allows us to use the SHAMap in unit tests.  So we don't attempt
+    // to fetch external nodes if we're not running in the application.
     if (!getApp().running ())
         return ret;
 

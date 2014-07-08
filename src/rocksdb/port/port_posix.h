@@ -120,7 +120,8 @@ class RWMutex {
 
   void ReadLock();
   void WriteLock();
-  void Unlock();
+  void ReadUnlock();
+  void WriteUnlock();
   void AssertHeld() { }
 
  private:
@@ -136,6 +137,8 @@ class CondVar {
   explicit CondVar(Mutex* mu);
   ~CondVar();
   void Wait();
+  // Timed condition wait.  Returns true if timeout occurred.
+  bool TimedWait(uint64_t abs_time_us);
   void Signal();
   void SignalAll();
  private:
@@ -481,6 +484,8 @@ inline bool LZ4HC_Compress(const CompressionOptions &opts, const char* input,
 }
 
 #define CACHE_LINE_SIZE 64U
+
+#define PREFETCH(addr, rw, locality) __builtin_prefetch(addr, rw, locality)
 
 } // namespace port
 } // namespace rocksdb

@@ -154,10 +154,15 @@ ColumnFamilyOptions::ColumnFamilyOptions(const Options& options)
       max_successive_merges(options.max_successive_merges),
       min_partial_merge_operands(options.min_partial_merge_operands) {
   assert(memtable_factory.get() != nullptr);
+  if (max_bytes_for_level_multiplier_additional.size() <
+      static_cast<unsigned int>(num_levels)) {
+    max_bytes_for_level_multiplier_additional.resize(num_levels, 1);
+  }
 }
 
 DBOptions::DBOptions()
     : create_if_missing(false),
+      create_missing_column_families(false),
       error_if_exists(false),
       paranoid_checks(true),
       env(Env::Default()),
@@ -197,6 +202,7 @@ DBOptions::DBOptions()
 
 DBOptions::DBOptions(const Options& options)
     : create_if_missing(options.create_if_missing),
+      create_missing_column_families(options.create_missing_column_families),
       error_if_exists(options.error_if_exists),
       paranoid_checks(options.paranoid_checks),
       env(options.env),
@@ -208,6 +214,7 @@ DBOptions::DBOptions(const Options& options)
       disableDataSync(options.disableDataSync),
       use_fsync(options.use_fsync),
       db_stats_log_interval(options.db_stats_log_interval),
+      db_paths(options.db_paths),
       db_log_dir(options.db_log_dir),
       wal_dir(options.wal_dir),
       delete_obsolete_files_period_micros(
@@ -259,9 +266,11 @@ void DBOptions::Dump(Logger* log) const {
     Log(log, "       Options.allow_os_buffer: %d", allow_os_buffer);
     Log(log, "      Options.allow_mmap_reads: %d", allow_mmap_reads);
     Log(log, "     Options.allow_mmap_writes: %d", allow_mmap_writes);
+    Log(log, "         Options.create_missing_column_families: %d",
+        create_missing_column_families);
     Log(log, "                             Options.db_log_dir: %s",
         db_log_dir.c_str());
-    Log(log, "                             Options.wal_dir: %s",
+    Log(log, "                                Options.wal_dir: %s",
         wal_dir.c_str());
     Log(log, "               Options.table_cache_numshardbits: %d",
         table_cache_numshardbits);
@@ -378,8 +387,6 @@ void ColumnFamilyOptions::Dump(Logger* log) const {
         source_compaction_factor);
     Log(log,"         Options.max_grandparent_overlap_factor: %d",
         max_grandparent_overlap_factor);
-    Log(log,"                Options.disable_seek_compaction: %d",
-        disable_seek_compaction);
     Log(log,"                         Options.no_block_cache: %d",
         no_block_cache);
     Log(log,"                       Options.arena_block_size: %zu",
@@ -462,7 +469,6 @@ Options::PrepareForBulkLoad()
   // no auto compactions please. The application should issue a
   // manual compaction after all data is loaded into L0.
   disable_auto_compactions = true;
-  disable_seek_compaction = true;
   disableDataSync = true;
 
   // A manual compaction run should pick all files in L0 in

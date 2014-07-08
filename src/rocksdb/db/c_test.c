@@ -154,6 +154,28 @@ static unsigned char FilterKeyMatch(
   return fake_filter_result;
 }
 
+// Custom compaction filter
+static void CFilterDestroy(void* arg) {}
+static const char* CFilterName(void* arg) { return "foo"; }
+static unsigned char CFilterFilter(void* arg, int level, const char* key,
+                                   size_t key_length,
+                                   const char* existing_value,
+                                   size_t value_length, char** new_value,
+                                   size_t* new_value_length,
+                                   unsigned char* value_changed) {
+  if (key_length == 3) {
+    if (memcmp(key, "bar", key_length) == 0) {
+      return 1;
+    } else if (memcmp(key, "baz", key_length) == 0) {
+      *value_changed = 1;
+      *new_value = "newbazvalue";
+      *new_value_length = 11;
+      return 0;
+    }
+  }
+  return 0;
+}
+
 // Custom merge operator
 static void MergeOperatorDestroy(void* arg) { }
 static const char* MergeOperatorName(void* arg) {
@@ -407,6 +429,37 @@ int main(int argc, char** argv) {
     rocksdb_filterpolicy_destroy(policy);
   }
 
+  StartPhase("compaction_filter");
+  {
+    rocksdb_compactionfilter_t* cfilter;
+    cfilter = rocksdb_compactionfilter_create(NULL, CFilterDestroy,
+                                              CFilterFilter, CFilterName);
+    // Create new database
+    rocksdb_close(db);
+    rocksdb_destroy_db(options, dbname, &err);
+    rocksdb_options_set_compaction_filter(options, cfilter);
+    db = rocksdb_open(options, dbname, &err);
+    CheckNoError(err);
+    rocksdb_put(db, woptions, "foo", 3, "foovalue", 8, &err);
+    CheckNoError(err);
+    CheckGet(db, roptions, "foo", "foovalue");
+    rocksdb_put(db, woptions, "bar", 3, "barvalue", 8, &err);
+    CheckNoError(err);
+    CheckGet(db, roptions, "bar", "barvalue");
+    rocksdb_put(db, woptions, "baz", 3, "bazvalue", 8, &err);
+    CheckNoError(err);
+    CheckGet(db, roptions, "baz", "bazvalue");
+
+    // Force compaction
+    rocksdb_compact_range(db, NULL, 0, NULL, 0);
+    // should have filtered bar, but not foo
+    CheckGet(db, roptions, "foo", "foovalue");
+    CheckGet(db, roptions, "bar", NULL);
+    CheckGet(db, roptions, "baz", "newbazvalue");
+
+    rocksdb_compactionfilter_destroy(cfilter);
+  }
+
   StartPhase("merge_operator");
   {
     rocksdb_mergeoperator_t* merge_operator;
@@ -442,7 +495,7 @@ int main(int argc, char** argv) {
     rocksdb_filterpolicy_t* policy = rocksdb_filterpolicy_create_bloom(10);
     rocksdb_options_set_filter_policy(options, policy);
     rocksdb_options_set_prefix_extractor(options, rocksdb_slicetransform_create_fixed_prefix(3));
-    rocksdb_options_set_hash_skip_list_rep(options, 50000, 4, 4);
+    rocksdb_options_set_hash_skip_list_rep(options, 5000, 4, 4);
     rocksdb_options_set_plain_table_factory(options, 4, 10, 0.75, 16);
 
     db = rocksdb_open(options, dbname, &err);

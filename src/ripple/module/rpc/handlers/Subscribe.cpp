@@ -142,7 +142,7 @@ Json::Value doSubscribe (RPC::Context& context)
     }
     else
     {
-        boost::unordered_set<RippleAddress> usnaAccoundIds  = RPC::parseAccountIds (context.params_[strAccountsProposed]);
+        ripple::unordered_set<RippleAddress> usnaAccoundIds  = RPC::parseAccountIds (context.params_[strAccountsProposed]);
 
         if (usnaAccoundIds.empty ())
         {
@@ -163,7 +163,7 @@ Json::Value doSubscribe (RPC::Context& context)
     }
     else
     {
-        boost::unordered_set<RippleAddress> usnaAccoundIds  = RPC::parseAccountIds (context.params_["accounts"]);
+        ripple::unordered_set<RippleAddress> usnaAccoundIds  = RPC::parseAccountIds (context.params_["accounts"]);
 
         if (usnaAccoundIds.empty ())
         {
@@ -198,7 +198,7 @@ Json::Value doSubscribe (RPC::Context& context)
                     || !jvSubRequest[jss::taker_gets].isObject ())
                 return rpcError (rpcINVALID_PARAMS);
 
-            // VFALCO TODO Use RippleAsset here
+            // VFALCO TODO Use Issue here
             Currency pay_currency;
             Account   pay_issuer;
             Currency get_currency;
