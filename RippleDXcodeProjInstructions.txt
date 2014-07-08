@@ -21,6 +21,22 @@ Make sure that the xcode_invokes_scons script has execute permissions for
 all groups.  In some cases git does not preserve file permissions.
 $ chmod +x xcode_invokes_scons
 
+The Xcode low-level debugger, lldb, has trouble finding symbols is a unity
+build (where a *.cpp includes a *.cpp).  To help lldb with that you need to
+create a "~/.lldbinit" file in your home directory.  Put the following contents
+in the .lldbinit file:
+
+
+# setting this value because the rippled unity build screws up lldb
+# finding symbols.  See here...
+#
+# http://lldb.llvm.org/troubleshooting.html
+#
+settings set target.inline-breakpoint-strategy always
+
+
+This will slow down lldb finding symbols, but it will find them more reliably.
+
 We're going to create a brand new Xcode project for RippleD.  So if you have
 a previously existing Xcode project for RippleD, we'll need to remove (or
 at least rename) the old one.  Go ahead and do that now.
