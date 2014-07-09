@@ -23,9 +23,7 @@ def xsorted(*args, **kwargs):
         def _key(item):
             if isinstance(item, tuple):
                 head, tail = item
-                head_head, head_tail = _key(head)
-                tail_head, tail_tail = _key(tail)
-                return ("t", head_head, head_tail, tail_head, tail_tail)
+                return ("t", _key(head), _key(tail))
             elif isinstance(item, (str, unicode)):
                 return ("s", item.upper(), item)
             elif isinstance(item, hexid):
@@ -54,13 +52,13 @@ class converter(object):
         """Converts A Python Object To NeXT plist Format."""
 
         if isinstance(inputobject, rootelem):
-            return inputobject.header() +self.linesep+ self.convert(dict(inputobject))
+            return inputobject.header() +self.linesep*2+ self.convert(inputobject.atts)
 
         elif isinstance(inputobject, hexid):
             return self.convert(str(inputobject))
 
         if isinstance(inputobject, dictelem):
-            return self.convert(dict(inputobject))
+            return self.convert(inputobject.atts)
 
         elif isinstance(inputobject, (str, unicode)):
             return inputobject
@@ -69,7 +67,7 @@ class converter(object):
             return str(inputobject)
 
         elif isinstance(inputobject, list):
-            out = [self.addtabs("(")]
+            out = ["("]
             self.recursion += 1
             for item in xsorted(inputobject):
                 out.append(self.addtabs(self.convert(item)) + ",")
@@ -78,7 +76,7 @@ class converter(object):
             return self.linesep.join(out)
 
         elif isinstance(inputobject, dict):
-            out = [self.addtabs("{")]
+            out = ["{"]
             self.recursion += 1
             for k,v in xsorted(inputobject.items()):
                 out.append(self.addtabs(self.convert(k)) +" = "+ self.convert(v) +";"+ self.linesep*(self.recursion <= 2))
@@ -142,10 +140,6 @@ class dictelem(object):
     def __delitem__(self, k):
         """Deletes An Attribute."""
         del self.atts[k]
-
-    def __dict__(self):
-        """Converts To A Python Dictionary."""
-        return self.atts
 
 
 class rootelem(dictelem):
