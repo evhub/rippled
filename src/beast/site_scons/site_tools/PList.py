@@ -52,7 +52,7 @@ class converter(object):
         """Converts A Python Object To NeXT plist Format."""
 
         if isinstance(inputobject, rootelem):
-            return inputobject.header() +self.linesep*2+ self.convert(inputobject.atts)
+            return inputobject.header() +self.linesep*2+ self.convert(inputobject.atts)     # The double linesep isn't required (one linesep is), but it looks nice
 
         elif isinstance(inputobject, hexid):
             return self.convert(str(inputobject))
@@ -79,7 +79,7 @@ class converter(object):
             out = ["{"]
             self.recursion += 1
             for k,v in xsorted(inputobject.items()):
-                out.append(self.addtabs(self.convert(k)) +" = "+ self.convert(v) +";"+ self.linesep*(self.recursion <= 2))
+                out.append(self.addtabs(self.convert(k)) +" = "+ self.convert(v) +";"+ self.linesep*(self.recursion <= 2))  # This extra linesep isn't required, but it looks nice
             self.recursion -= 1
             out.append(self.addtabs("}"))
             return self.linesep.join(out)
@@ -117,7 +117,7 @@ class comment(object):
 
     def __str__(self):
         """Converts To A Python String."""
-        return "/* " + self.text.replace("*/", "*_/")+ " */"
+        return "/* " + self.text.replace("*/", "*_/")+ " */"     # Probably not a problem, but best to prevent the file from becoming unreadable in the unlikely case that */ is used
 
 
 class dictelem(object):
@@ -145,7 +145,14 @@ class dictelem(object):
 class rootelem(dictelem):
     """The Root Element Of A NeXT plist."""
 
-    def __init__(self, rootObject, objectVersion=46, encoding="UTF8", archiveVersion=1, classes=None):
+    def __init__(self,
+                 rootObject,
+                 objectVersion=46,  # Things that vary between 45 and 46 will be marked
+                 encoding="UTF8",
+                 archiveVersion=1,
+                 classes=None):
+        """Creates The Root Element."""
+
         self.encoding = str(encoding)
         self.atts = {
             "archiveVersion": archiveVersion,
@@ -175,8 +182,13 @@ class rootelem(dictelem):
 class PBXContainerItemProxy(dictelem):
     """An XCode PBXContainerItemProxy Object."""
 
-    def __init__(self, containerPortal, remoteGlobalIDString, remoteInfo, proxyType=2):
+    def __init__(self,
+                 containerPortal,
+                 remoteGlobalIDString,
+                 remoteInfo,
+                 proxyType=2):      # Changed from 1 to 2 in 46
         """Creates The PBXContainerItemProxy."""
+
         self.atts = {
             "isa": "PBXContainerItemProxy",
             "containerPortal": containerPortal,
@@ -189,8 +201,14 @@ class PBXContainerItemProxy(dictelem):
 class PBXFileReference(dictelem):
     """An XCode PBXFileReference Object."""
 
-    def __init__(self, path, lastKnownFileType="text", sourceTree="<group>", fileEncoding=4):
+    def __init__(self,
+                 path,
+                 lastKnownFileType="text",
+                 sourceTree="<group>",
+                 name=None,     # Only appears in 46
+                 fileEncoding=4):
         """Creates The PBXFileReference."""
+
         self.atts = {
             "isa": "PBXFileReference",
             "fileEncoding": fileEncoding,
@@ -198,13 +216,19 @@ class PBXFileReference(dictelem):
             "path": path,
             "sourceTree": '"'+sourceTree+'"'
             }
+        if name is not None:
+            self.atts[name] = name
 
 
 class PBXGroup(dictelem):
     """An XCode PBXGroup Object."""
 
-    def __init__(self, path=None, sourceTree="<group>"):
+    def __init__(self,
+                 path=None,     # Doesn't appear in 45
+                 name=None,     # Only appears in 46
+                 sourceTree="<group>"):
         """Creates The PBXGroup."""
+
         self.atts = {
             "isa": "PBXGroup",
             "children": [],
@@ -212,6 +236,8 @@ class PBXGroup(dictelem):
             }
         if path is not None:
             self.atts["path"] = path
+        if name is not None:
+            self.atts["name"] = name
 
     def __getitem__(self, k):
         """Gets A Child."""
@@ -230,8 +256,8 @@ class PBXGroup(dictelem):
         self.atts["children"].extend(v)
 
 
-class PBXLegacyTarget(dictelem):
-    """An XCode PBXLegacyTarget Object."""
+class PBXLegacyTarget(dictelem):    # This class should never be used because we should always be generating native targets, not legacy targets
+    """An XCode PBXLegacyTarget Object."""      # This class only implements version 46
 
     def __init__(self,
                  name,
@@ -260,12 +286,30 @@ class PBXLegacyTarget(dictelem):
 
 
 class PBXNativeTarget(dictelem):
-    """An XCode PBXNativeTarget Object."""
+    """An XCode PBXNativeTarget Object."""      # This class only implements version 45
 
-    def __init__(self):
+    def __init__(self,
+                 name,
+                 buildConfigurationList,
+                 productInstallPath,
+                 productReference,
+                 productType,
+                 dependencies=None,
+                 buildPhases=None,
+                 buildRules=None,
+                 productName=None):
         """Creates The PBXNativeTarget."""
         self.atts = {
-            "isa": "PBXNativeTarget"
+            "isa": "PBXNativeTarget",
+            "buildConfigurationList": buildConfigurationList,
+            "buildPhases": buildPhases or [],
+            "buildRules": buildRules or [],
+            "dependencies": dependencies or [],
+            "name": name,
+            "productInstallPath": productInstallPath,
+            "productName": productName or name,
+            "productReference": productReference,
+            "productType": productType
             }
 
 
@@ -278,22 +322,17 @@ class PBXProject(dictelem):
                  ProductGroup,
                  ProjectRef,
                  buildConfigurationList,
-                 ORGANIZATIONNAME,
+                 attributes=None,       # Doesn't appear in 45
                  projectDirPath="",
                  projectRoot="",
                  hasScannedForEncodings=0,
-                 LastUpgradeCheck=0510,
-                 compatibilityVersion="XCode 3.2",
+                 compatibilityVersion="XCode 3.2",      # Was XCode 2.4 in 45
                  developmentRegion="English",
                  knownRegions=None):
         """Creates The PBXProject."""
 
         self.atts = {
             "isa": "PBXProject",
-            "attributes": {
-                "LastUpgradeCheck": LastUpgradeCheck,
-                "ORGANIZATIONNAME": ORGANIZATIONNAME
-                },
             "buildConfigurationList": buildConfigurationList,
             "compatibilityVersion": '"'+compatibilityVersion+'"',
             "developmentRegion": developmentRegion,
@@ -310,13 +349,21 @@ class PBXProject(dictelem):
             "projectRoot": '"'+projectRoot+'"',
             "targets": targets
             }
+        if attributes is not None:
+            self.atts["attributes"] = attributes
 
 
 class PBXReferenceProxy(dictelem):
-    """An XCode PBXReferenceProxy Object."""
+    """An XCode PBXReferenceProxy Object."""    # This class only appears in 46
 
-    def __init__(self, remoteRef, path, fileType, name=None, sourceTree="BUILT_PRODUCTS_DIR"):
+    def __init__(self,
+                 remoteRef,
+                 path,
+                 fileType,
+                 name=None,
+                 sourceTree="BUILT_PRODUCTS_DIR"):
         """Creates The PBXReferenceProxy."""
+
         self.atts = {
             "isa": "PBXReferenceProxy",
             "fileType": '"'+fileType+'"',
@@ -331,8 +378,10 @@ class PBXReferenceProxy(dictelem):
 class XCBuildConfiguration(dictelem):
     """An XCode XCBuildConfiguration Object."""
 
-    def __init__(self, name):
+    def __init__(self,
+                 name):
         """Creates The XCBuildConfiguration."""
+
         self.atts = {
             "isa": "XCBuildConfiguration",
             "buildSettings": {},
@@ -355,8 +404,12 @@ class XCBuildConfiguration(dictelem):
 class XCConfigurationList(dictelem):
     """An XCode XCConfigurationList Object."""
 
-    def __init__(self, buildConfigurations, defaultConfigurationName, defaultConfigurationIsVisible=0):
+    def __init__(self,
+                 buildConfigurations,
+                 defaultConfigurationName,
+                 defaultConfigurationIsVisible=0):
         """Creates The XCConfigurationList."""
+
         self.atts = {
             "isa": "XCConfigurationList",
             "buildConfigurations": buildConfigurations,
