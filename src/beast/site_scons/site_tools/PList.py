@@ -142,6 +142,70 @@ class dictelem(object):
         del self.atts[k]
 
 
+# XCode: ---------------------------------------------------------------------------
+
+
+def targetconfig(debug=False):
+    """Assembles The Default Configuration For A Target."""     # This function only implements version 46
+    out = {
+        "PRODUCT_NAME" : '"$(TARGET_NAME)"',
+        "OTHER_CFLAGS" : '""',
+        "OTHER_LDFLAGS" : '""'
+        }
+    if debug:
+        out.extend({
+            "DEBUGGING_SYMBOLS" : "YES",
+            "GCC_GENERATE_DEBUGGING_SYMBOLS" : "YES",
+            "GCC_OPTIMIZATION_LEVEL" : 0
+            })
+
+
+def projectconfig(debug=False):
+    """Assembles The Default Configuration For A Project."""    # This function only implements version 46
+    out = {
+        "ALWAYS_SEARCH_USER_PATHS" : "NO",
+        "CLANG_CXX_LANGUAGE_STANDARD" : '"gnu++0x"',
+        "CLANG_CXX_LIBRARY" : '"libc++"',
+        "CLANG_ENABLE_MODULES" : "YES",
+        "CLANG_ENABLE_OBJC_ARC" : "YES",
+        "CLANG_WARN_BOOL_CONVERSION" : "YES",
+        "CLANG_WARN_CONSTANT_CONVERSION" : "YES",
+        "CLANG_WARN_DIRECT_OBJC_ISA_USAGE" : "YES_ERROR",
+        "CLANG_WARN_EMPTY_BODY" : "YES",
+        "CLANG_WARN_ENUM_CONVERSION" : "YES",
+        "CLANG_WARN_INT_CONVERSION" : "YES",
+        "CLANG_WARN_OBJC_ROOT_CLASS" : "YES_ERROR",
+        "CLANG_WARN__DUPLICATE_METHOD_MATCH" : "YES",
+        "COPY_PHASE_STRIP" : "YES",
+        "GCC_C_LANGUAGE_STANDARD" : "gnu99",
+        "GCC_ENABLE_OBJC_EXCEPTIONS" : "YES",
+        "GCC_WARN_64_TO_32_BIT_CONVERSION" : "YES",
+        "GCC_WARN_ABOUT_RETURN_TYPE" : "YES_ERROR",
+        "GCC_WARN_UNDECLARED_SELECTOR" : "YES",
+        "GCC_WARN_UNINITIALIZED_AUTOS" : "YES_AGGRESSIVE",
+        "GCC_WARN_UNUSED_FUNCTION" : "YES",
+        "GCC_WARN_UNUSED_VARIABLE" : "YES",
+        "MACOSX_DEPLOYMENT_TARGET" : "10.9",
+        "SDKROOT" : "macosx"
+        }
+    if debug:
+        out.extend({
+            "GCC_SYMBOLS_PRIVATE_EXTERN" : "NO",
+            "GCC_DYNAMIC_NO_PIC" : "NO",
+            "GCC_OPTIMIZATION_LEVEL" : 0,
+            "GCC_PREPROCESSOR_DEFINITIONS" : [
+                '"DEBUG:1"',
+                '"$(inherited)"'
+            ],
+            "ONLY_ACTIVE_ARCH" : "YES"
+            })
+    else:
+        out.extend({
+            "DEBUG_INFORMATION_FORMAT" : '"dwarf-with-dsym"',
+            "ENABLE_NS_ASSERTIONS" : "NO"
+            )}
+
+
 class rootelem(dictelem):
     """The Root Element Of A NeXT plist."""
 
@@ -150,7 +214,8 @@ class rootelem(dictelem):
                  objectVersion=46,  # Things that vary between 45 and 46 will be marked
                  encoding="UTF8",
                  archiveVersion=1,
-                 classes=None):
+                 classes=None,
+                 objects=None):
         """Creates The Root Element."""
 
         self.encoding = str(encoding)
@@ -158,7 +223,7 @@ class rootelem(dictelem):
             "archiveVersion": archiveVersion,
             "classes": classes or {},
             "objectVersion": objectVersion,
-            "objects": {},
+            "objects": objects or {},
             "rootObject": rootObject
             }
 
@@ -179,6 +244,70 @@ class rootelem(dictelem):
         return "// !$*"+self.encoding+"*$!"
 
 
+class parentelem(dictelem):
+    """A Base Class For Parent Objects."""
+
+    def __init__(self, isa, children=None):
+        """Creates The Dictionary."""
+        self.atts = {
+            "isa": str(isa),
+            "children": children or []
+            }
+
+    def __getitem__(self, k):
+        """Gets A Child."""
+        return self.atts["children"][k]
+
+    def __setitem__(self, k, v):
+        """Sets A Child."""
+        self.atts["children"][k] = v
+
+    def append(self, v):
+        """Appends A Child."""
+        self.atts["children"].append(v)
+
+    def extend(self, v):
+        """Extends Children."""
+        self.atts["children"].extend(v)
+
+
+class PBXAggregateTarget(dictelem):
+    """An XCode PBXAggregateTarget Object."""   # This class only implements version 45
+
+    def __init__(self,
+                 name,
+                 buildConfigurationList,
+                 dependencies=None,
+                 buildPhases=None,
+                 productName=None):
+        """Creates The PBXAggregateTarget."""
+
+        self.atts = {
+            "isa": "PBXAggregateTarget",
+            "buildConfigurationList": buildConfigurationList,
+            "buildPhases": buildPhases or [],
+            "dependencies": dependencies or [],
+            "name": name,
+            "productName": productName or name
+            }
+
+
+class PBXBuildFile(dictelem):
+    """An XCode PBXBuildFile Object."""     # This class only implements version 45
+
+    def __init__(self,
+                 fileRef,
+                 settings=None):
+        """Creates The PBXBuildFile."""
+
+        self.atts = {
+            "isa": "PBXBuildFile",
+            "fileRef": fileRef
+            }
+        if settings is not None:
+            self.atts["settings"] = settings
+
+
 class PBXContainerItemProxy(dictelem):
     """An XCode PBXContainerItemProxy Object."""
 
@@ -195,6 +324,27 @@ class PBXContainerItemProxy(dictelem):
             "proxyType": proxyType,
             "remoteGlobalIDString": remoteGlobalIDString,
             "remoteInfo": remoteInfo
+            }
+
+
+class PBXCopyFilesBuildPhase(dictelem):
+    """An XCode PBXCopyFilesBuildPhase Object."""   # This class only implements version 45
+
+    def __init__(self,
+                 dstPath
+                 dstSubfolderSpec,
+                 files=None,
+                 buildActionMask=2**32-1,
+                 runOnlyForDeploymentPostprocessing=0):
+        """Creates The PBXCopyFilesBuildPhase."""
+
+        self.atts = {
+            "isa": "PBXCopyFilesBuildPhase",
+            "buildActionMask": buildActionMask,
+            "dstPath": dstPath,
+            "dstSubfolderSpec": dstSubfolderSpec,
+            "files": files or [],
+            "runOnlyForDeploymentPostprocessing": runOnlyForDeploymentPostprocessing
             }
 
 
@@ -220,18 +370,36 @@ class PBXFileReference(dictelem):
             self.atts[name] = name
 
 
-class PBXGroup(dictelem):
+class PBXFrameworksBuildPhase(dictelem):
+    """An XCode PBXFrameworksBuildPhase Object."""  # This class only implements version 45
+
+    def __init__(self,
+                 files=None,
+                 buildActionMask=2**32-1,
+                 runOnlyForDeploymentPostprocessing=0):
+        """Creates The PBXFrameworksBuildPhase."""
+
+        self.atts = {
+            "isa": "PBXFrameworksBuildPhase",
+            "buildActionMask": buildActionMask,
+            "files": files or [],
+            "runOnlyForDeploymentPostprocessing": runOnlyForDeploymentPostprocessing
+            }
+
+
+class PBXGroup(parentelem):
     """An XCode PBXGroup Object."""
 
     def __init__(self,
                  path=None,     # Doesn't appear in 45
                  name=None,     # Only appears in 46
-                 sourceTree="<group>"):
+                 sourceTree="<group>",
+                 children=None):
         """Creates The PBXGroup."""
 
         self.atts = {
             "isa": "PBXGroup",
-            "children": [],
+            "children": children or [],
             "sourceTree": '"'+sourceTree+'"'
             }
         if path is not None:
@@ -239,21 +407,22 @@ class PBXGroup(dictelem):
         if name is not None:
             self.atts["name"] = name
 
-    def __getitem__(self, k):
-        """Gets A Child."""
-        return self.atts["children"][k]
 
-    def __setitem__(self, k, v):
-        """Sets A Child."""
-        self.atts["children"][k] = v
+class PBXHeadersBuildPhase(dictelem):
+    """An XCode PBXHeadersBuildPhase Object."""     # This class only implements version 45
 
-    def append(self, v):
-        """Appends A Child."""
-        self.atts["children"].append(v)
+    def __init__(self,
+                 files=None,
+                 buildActionMask=2**32-1,
+                 runOnlyForDeploymentPostprocessing=0):
+        """Creates The PBXHeadersBuildPhase."""
 
-    def extend(self, v):
-        """Extends Children."""
-        self.atts["children"].extend(v)
+        self.atts = {
+            "isa": "PBXHeadersBuildPhase",
+            "buildActionMask": buildActionMask,
+            "files": files or [],
+            "runOnlyForDeploymentPostprocessing": runOnlyForDeploymentPostprocessing
+            }
 
 
 class PBXLegacyTarget(dictelem):    # This class should never be used because we should always be generating native targets, not legacy targets
@@ -299,6 +468,7 @@ class PBXNativeTarget(dictelem):
                  buildRules=None,
                  productName=None):
         """Creates The PBXNativeTarget."""
+
         self.atts = {
             "isa": "PBXNativeTarget",
             "buildConfigurationList": buildConfigurationList,
@@ -375,16 +545,108 @@ class PBXReferenceProxy(dictelem):
             self.atts["name"] = name
 
 
+class PBXResourcesBuildPhase(dictelem):
+    """An XCode PBXResourcesBuildPhase Object."""     # This class only implements version 45
+
+    def __init__(self,
+                 files=None,
+                 buildActionMask=2**32-1,
+                 runOnlyForDeploymentPostprocessing=0):
+        """Creates The PBXResourcesBuildPhase."""
+
+        self.atts = {
+            "isa": "PBXResourcesBuildPhase",
+            "buildActionMask": buildActionMask,
+            "files": files or [],
+            "runOnlyForDeploymentPostprocessing": runOnlyForDeploymentPostprocessing
+            }
+
+
+class PBXShellScriptBuildPhase(dictelem):
+    """An XCode PBXShellScriptBuildPhase Object."""     # This class only implements version 45
+
+    def __init__(self,
+                 shellScript,
+                 shellPath="/bin/sh",
+                 files=None,
+                 inputPaths=None,
+                 outputPaths=None,
+                 buildActionMask=2**32-1,
+                 runOnlyForDeploymentPostprocessing=0):
+        """Creates The PBXShellScriptBuildPhase."""
+
+        self.atts = {
+            "isa": "PBXShellScriptBuildPhase",
+            "buildActionMask": buildActionMask,
+            "files": files or [],
+            "inputPaths": inputPaths or [],
+            "outputPaths": outputPaths or [],
+            "runOnlyForDeploymentPostprocessing": runOnlyForDeploymentPostprocessing,
+            "shellPath": shellPath,
+            "shellScript": shellScript
+            }
+
+
+class PBXSourcesBuildPhase(dictelem):
+    """An XCode PBXSourcesBuildPhase Object."""     # This class only implements version 45
+
+    def __init__(self,
+                 files=None,
+                 buildActionMask=2**32-1,
+                 runOnlyForDeploymentPostprocessing=0):
+        """Creates The PBXSourcesBuildPhase."""
+
+        self.atts = {
+            "isa": "PBXSourcesBuildPhase",
+            "buildActionMask": buildActionMask,
+            "files": files or [],
+            "runOnlyForDeploymentPostprocessing": runOnlyForDeploymentPostprocessing
+            }
+
+
+class PBXTargetDependency(dictelem):
+    """An XCode PBXTargetDependency Object."""      # This class only implements version 45
+
+    def __init__(self,
+                 target,
+                 targetProxy):
+        """Creates The PBXTargetDependency."""
+
+        self.atts = {
+            "isa": "PBXTargetDependency",
+            "target": target,
+            "targetProxy": targetProxy
+            }
+
+
+class PBXVariantGroup(parentelem):
+    """An XCode PBXVariantGroup Object."""      # This class only implements version 45
+
+    def __init__(self,
+                 name,
+                 sourceTree="",
+                 children=None):
+        """Creates The PBXVariantGroup."""
+
+    self.atts = {
+        "isa": "PBXVariantGroup",
+        "children": children or [],
+        "name": name,
+        "sourceTree": '"'+sourceTree+'"'
+        }
+
+
 class XCBuildConfiguration(dictelem):
     """An XCode XCBuildConfiguration Object."""
 
     def __init__(self,
-                 name):
+                 name,
+                 buildSettings=None):
         """Creates The XCBuildConfiguration."""
 
         self.atts = {
             "isa": "XCBuildConfiguration",
-            "buildSettings": {},
+            "buildSettings": buildSettings or {},
             "name": name
             }
 
