@@ -1,5 +1,7 @@
 # Info: ----------------------------------------------------------------------------
 
+# Portions of this file Copyright (c) 2012 Google Inc.
+
 
 """
 A tool for working with old-style NeXT plists.
@@ -46,6 +48,23 @@ class converter(object):
     """Converts Objects Into NeXT plist Format."""
     linesep = "\n"
     recursion = 0
+    unquoted = re.compile('^[A-Za-z0-9$./_]+$')
+    quoted = re.compile('___')
+    escaped = re.compile('[\\\\"]|[\x00-\x1f]')
+
+    def __init__(self):
+        """Initializes The Converter."""
+        self.transforms = []
+        for i in xrange(0, ord(" ")):
+            transforms.append("\\U%04x" % i)
+        transforms[7] = "\\a"
+        transforms[8] = "\\b"
+        transforms[9] = "\\t"
+        transforms[10] = "\\n"
+        transforms[11] = "\\v"
+        transforms[12] = "\\f"
+        transforms[13] = "\\n"
+
 
     def addtabs(self, inputstring):
         """Adds Tabbing For Readability."""
@@ -64,7 +83,10 @@ class converter(object):
             return self.convert(inputobject.atts)
 
         elif isinstance(inputobject, (str, unicode)):
-            return inputobject
+            if self.unquoted.search(inputobject) and not self.quoted.search(inputobject):
+                return inputobject
+            else:
+                return '"' + escaped.sub(self.transform, inputobject) + '"'
 
         elif isinstance(inputobject, (int, long)):
             return str(inputobject)
@@ -89,6 +111,16 @@ class converter(object):
 
         else:
             raise TypeError("Unable to process plist object "+repr(inputobject))
+
+    def transform(self, match):
+        """Performs String Escaping."""
+        char = match.group(0)
+        if char == '\\':
+            return '\\\\'
+        if char == '"':
+            return '\\"'
+        else:
+            return self.transforms[ord(char)]
 
 
 class hexid(object):
@@ -151,9 +183,9 @@ class dictelem(object):
 def targetconfig(debug=False):
     """Assembles The Default Configuration For A Target."""     # This function only implements version 46
     out = {
-        "PRODUCT_NAME" : '"$(TARGET_NAME)"',
-        "OTHER_CFLAGS" : '""',
-        "OTHER_LDFLAGS" : '""'
+        "PRODUCT_NAME" : "$(TARGET_NAME)",
+        "OTHER_CFLAGS" : "",
+        "OTHER_LDFLAGS" : ""
         }
     if debug:
         out.extend({
@@ -167,8 +199,8 @@ def projectconfig(debug=False):
     """Assembles The Default Configuration For A Project."""    # This function only implements version 46
     out = {
         "ALWAYS_SEARCH_USER_PATHS" : "NO",
-        "CLANG_CXX_LANGUAGE_STANDARD" : '"gnu++0x"',
-        "CLANG_CXX_LIBRARY" : '"libc++"',
+        "CLANG_CXX_LANGUAGE_STANDARD" : "gnu++0x",
+        "CLANG_CXX_LIBRARY" : "libc++",
         "CLANG_ENABLE_MODULES" : "YES",
         "CLANG_ENABLE_OBJC_ARC" : "YES",
         "CLANG_WARN_BOOL_CONVERSION" : "YES",
@@ -197,14 +229,14 @@ def projectconfig(debug=False):
             "GCC_DYNAMIC_NO_PIC" : "NO",
             "GCC_OPTIMIZATION_LEVEL" : 0,
             "GCC_PREPROCESSOR_DEFINITIONS" : [
-                '"DEBUG:1"',
-                '"$(inherited)"'
+                "DEBUG:1",
+                "$(inherited)"
             ],
             "ONLY_ACTIVE_ARCH" : "YES"
             })
     else:
         out.extend({
-            "DEBUG_INFORMATION_FORMAT" : '"dwarf-with-dsym"',
+            "DEBUG_INFORMATION_FORMAT" : "dwarf-with-dsym",
             "ENABLE_NS_ASSERTIONS" : "NO"
             })
 
@@ -274,6 +306,24 @@ class parentelem(dictelem):
         self.atts["children"].extend(v)
 
 
+class buildphase(dictelem):
+    """A Base Class For Build Phase Objects."""
+    isa="PBXBuildPhase"
+
+    def __init__(self,
+                 files=None,
+                 buildActionMask=2**32-1,
+                 runOnlyForDeploymentPostprocessing=0):
+        """Creates The Build Phase."""
+
+        self.atts = {
+            "isa": self.isa,
+            "buildActionMask": buildActionMask,
+            "files": files or [],
+            "runOnlyForDeploymentPostprocessing": runOnlyForDeploymentPostprocessing
+            }
+
+
 class PBXAggregateTarget(dictelem):
     """An XCode PBXAggregateTarget Object."""   # This class only implements version 45
 
@@ -330,7 +380,7 @@ class PBXContainerItemProxy(dictelem):
             }
 
 
-class PBXCopyFilesBuildPhase(dictelem):
+class PBXCopyFilesBuildPhase(buildphase):
     """An XCode PBXCopyFilesBuildPhase Object."""   # This class only implements version 45
 
     def __init__(self,
@@ -367,27 +417,15 @@ class PBXFileReference(dictelem):
             "fileEncoding": fileEncoding,
             "lastKnownFileType": lastKnownFileType,
             "path": path,
-            "sourceTree": '"'+sourceTree+'"'
+            "sourceTree": sourceTree
             }
         if name is not None:
             self.atts[name] = name
 
 
-class PBXFrameworksBuildPhase(dictelem):
+class PBXFrameworksBuildPhase(buildphase):
     """An XCode PBXFrameworksBuildPhase Object."""  # This class only implements version 45
-
-    def __init__(self,
-                 files=None,
-                 buildActionMask=2**32-1,
-                 runOnlyForDeploymentPostprocessing=0):
-        """Creates The PBXFrameworksBuildPhase."""
-
-        self.atts = {
-            "isa": "PBXFrameworksBuildPhase",
-            "buildActionMask": buildActionMask,
-            "files": files or [],
-            "runOnlyForDeploymentPostprocessing": runOnlyForDeploymentPostprocessing
-            }
+    isa = "PBXFrameworksBuildPhase"
 
 
 class PBXGroup(parentelem):
@@ -403,7 +441,7 @@ class PBXGroup(parentelem):
         self.atts = {
             "isa": "PBXGroup",
             "children": children or [],
-            "sourceTree": '"'+sourceTree+'"'
+            "sourceTree": sourceTree
             }
         if path is not None:
             self.atts["path"] = path
@@ -411,21 +449,9 @@ class PBXGroup(parentelem):
             self.atts["name"] = name
 
 
-class PBXHeadersBuildPhase(dictelem):
+class PBXHeadersBuildPhase(buildphase):
     """An XCode PBXHeadersBuildPhase Object."""     # This class only implements version 45
-
-    def __init__(self,
-                 files=None,
-                 buildActionMask=2**32-1,
-                 runOnlyForDeploymentPostprocessing=0):
-        """Creates The PBXHeadersBuildPhase."""
-
-        self.atts = {
-            "isa": "PBXHeadersBuildPhase",
-            "buildActionMask": buildActionMask,
-            "files": files or [],
-            "runOnlyForDeploymentPostprocessing": runOnlyForDeploymentPostprocessing
-            }
+    isa = "PBXHeadersBuildPhase"
 
 
 class PBXLegacyTarget(dictelem):    # This class should never be used because we should always be generating native targets, not legacy targets
@@ -445,7 +471,7 @@ class PBXLegacyTarget(dictelem):    # This class should never be used because we
 
         self.atts = {
             "isa": "PBXLegacyTarget",
-            "buildArgumentsString": '"'+buildArgumentsString+'"',
+            "buildArgumentsString": buildArgumentsString,
             "buildConfigurationList": buildConfigurationList,
             "buildPhases": buildPhases or [],
             "buildToolPath":buildToolPath,
@@ -507,19 +533,19 @@ class PBXProject(dictelem):
         self.atts = {
             "isa": "PBXProject",
             "buildConfigurationList": buildConfigurationList,
-            "compatibilityVersion": '"'+compatibilityVersion+'"',
+            "compatibilityVersion": compatibilityVersion,
             "developmentRegion": developmentRegion,
             "hasScannedForEncodings": hasScannedForEncodings,
             "knownRegions": knownRegions or ["en"],
             "mainGroup": mainGroup,
-            "projectDirPath": '"'+projectDirPath+'"',
+            "projectDirPath": projectDirPath,
             "projectReferences": [
                 {
                     "ProductGroup": ProductGroup,
                     "ProjectRef": ProjectRef
                     }
                 ],
-            "projectRoot": '"'+projectRoot+'"',
+            "projectRoot": projectRoot,
             "targets": targets
             }
         if attributes is not None:
@@ -539,7 +565,7 @@ class PBXReferenceProxy(dictelem):
 
         self.atts = {
             "isa": "PBXReferenceProxy",
-            "fileType": '"'+fileType+'"',
+            "fileType": fileType,
             "path": path,
             "remoteRef": remoteRef,
             "sourceTree": sourceTree
@@ -548,24 +574,12 @@ class PBXReferenceProxy(dictelem):
             self.atts["name"] = name
 
 
-class PBXResourcesBuildPhase(dictelem):
+class PBXResourcesBuildPhase(buildphase):
     """An XCode PBXResourcesBuildPhase Object."""     # This class only implements version 45
-
-    def __init__(self,
-                 files=None,
-                 buildActionMask=2**32-1,
-                 runOnlyForDeploymentPostprocessing=0):
-        """Creates The PBXResourcesBuildPhase."""
-
-        self.atts = {
-            "isa": "PBXResourcesBuildPhase",
-            "buildActionMask": buildActionMask,
-            "files": files or [],
-            "runOnlyForDeploymentPostprocessing": runOnlyForDeploymentPostprocessing
-            }
+    isa = "PBXResourcesBuildPhase"
 
 
-class PBXShellScriptBuildPhase(dictelem):
+class PBXShellScriptBuildPhase(buildphase):
     """An XCode PBXShellScriptBuildPhase Object."""     # This class only implements version 45
 
     def __init__(self,
@@ -590,21 +604,9 @@ class PBXShellScriptBuildPhase(dictelem):
             }
 
 
-class PBXSourcesBuildPhase(dictelem):
+class PBXSourcesBuildPhase(buildphase):
     """An XCode PBXSourcesBuildPhase Object."""     # This class only implements version 45
-
-    def __init__(self,
-                 files=None,
-                 buildActionMask=2**32-1,
-                 runOnlyForDeploymentPostprocessing=0):
-        """Creates The PBXSourcesBuildPhase."""
-
-        self.atts = {
-            "isa": "PBXSourcesBuildPhase",
-            "buildActionMask": buildActionMask,
-            "files": files or [],
-            "runOnlyForDeploymentPostprocessing": runOnlyForDeploymentPostprocessing
-            }
+    isa = "PBXSourcesBuildPhase"
 
 
 class PBXTargetDependency(dictelem):
@@ -635,7 +637,7 @@ class PBXVariantGroup(parentelem):
             "isa": "PBXVariantGroup",
             "children": children or [],
             "name": name,
-            "sourceTree": '"'+sourceTree+'"'
+            "sourceTree": sourceTree
             }
 
 
