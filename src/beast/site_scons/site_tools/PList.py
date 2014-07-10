@@ -22,14 +22,17 @@ def xsorted(*args, **kwargs):
     if not "key" in kwargs:
         def _key(item):
             if isinstance(item, tuple):
-                head, tail = item
-                return ("t", _key(head), _key(tail))
+                return ("t", map(_key, item))
             elif isinstance(item, (str, unicode)):
                 return ("s", item.upper(), item)
             elif isinstance(item, hexid):
                 return ("h", item.comment.text, item.hashout)
             elif isinstance(item, dictelem):
-                return ("d", item.atts["isa"], str(len(item.atts)))
+                return ("e", item.atts["isa"], len(item.atts), sorted(map(_key, item.atts.items())))
+            elif isinstance(item, dict):
+                return ("d", len(item), sorted(map(_key, item.items())))
+            elif isinstance(item, list):
+                return ("l", len(item), map(_key, item))
             else:
                 return (repr(type(item)), item)
         kwargs["key"] = _key
@@ -126,7 +129,7 @@ class dictelem(object):
     def __init__(self, isa):
         """Creates The Dictionary."""
         self.atts = {
-            "isa": str(isa)
+            "isa": isa
             }
 
     def __getitem__(self, k):
@@ -203,7 +206,7 @@ def projectconfig(debug=False):
         out.extend({
             "DEBUG_INFORMATION_FORMAT" : '"dwarf-with-dsym"',
             "ENABLE_NS_ASSERTIONS" : "NO"
-            )}
+            })
 
 
 class rootelem(dictelem):
@@ -250,7 +253,7 @@ class parentelem(dictelem):
     def __init__(self, isa, children=None):
         """Creates The Dictionary."""
         self.atts = {
-            "isa": str(isa),
+            "isa": isa,
             "children": children or []
             }
 
@@ -331,7 +334,7 @@ class PBXCopyFilesBuildPhase(dictelem):
     """An XCode PBXCopyFilesBuildPhase Object."""   # This class only implements version 45
 
     def __init__(self,
-                 dstPath
+                 dstPath,
                  dstSubfolderSpec,
                  files=None,
                  buildActionMask=2**32-1,
@@ -628,12 +631,12 @@ class PBXVariantGroup(parentelem):
                  children=None):
         """Creates The PBXVariantGroup."""
 
-    self.atts = {
-        "isa": "PBXVariantGroup",
-        "children": children or [],
-        "name": name,
-        "sourceTree": '"'+sourceTree+'"'
-        }
+        self.atts = {
+            "isa": "PBXVariantGroup",
+            "children": children or [],
+            "name": name,
+            "sourceTree": '"'+sourceTree+'"'
+            }
 
 
 class XCBuildConfiguration(dictelem):
