@@ -137,7 +137,9 @@ Strings of class unicode are handled properly and encoded in UTF-8 when
 a project file is output.
 """
 
-import gyp.common
+from __future__ import with_statement, absolute_import
+
+import .common
 import posixpath
 import re
 import struct

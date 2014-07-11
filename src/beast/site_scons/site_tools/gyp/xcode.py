@@ -2,11 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import with_statement, absolute_import
+
 import filecmp
-import gyp.common
+import .common
 # Disabled because ninja support is not wanted. Old code:
 ##import gyp.xcode_ninja
-import gyp.xcodeproj_file
+import .xcodeproj_file
 import errno
 import os
 import sys

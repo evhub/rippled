@@ -7,8 +7,10 @@ This module contains classes that help to emulate xcodebuild behavior on top of
 other build systems, such as make and ninja.
 """
 
+from __future__ import with_statement, absolute_import
+
 import copy
-import gyp.common
+import .common
 import os
 import os.path
 import re
@@ -16,7 +18,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
-from gyp.common import GypError
+from .common import GypError
 
 # Populated lazily by XcodeVersion, for efficiency, and to fix an issue when
 # "xcodebuild" is called too quickly (it has been found to return incorrect
