@@ -137,9 +137,9 @@ Strings of class unicode are handled properly and encoded in UTF-8 when
 a project file is output.
 """
 
-from __future__ import with_statement, absolute_import
+from __future__ import with_statement
 
-import .common
+import common
 import posixpath
 import re
 import struct
