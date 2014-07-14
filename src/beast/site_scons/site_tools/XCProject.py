@@ -49,25 +49,27 @@ class Options(object):
     generator_output = ""
 
 
-def buildProject(target, source, env):
+def buildProject(target_list, source, env):
     try:
         config = env["XCPROJECT_CONFIG"]
     except KeyError:
         raise ValueError ("Missing XCPROJECT_CONFIG")
     root_dir = os.getcwd()
     root_dirs = [os.path.abspath(x) for x in makeList(env["XCPROJECT_ROOT_DIRS"])]
-    project_node = "".join(list(target))
-    xcode.GenerateOutput(project_node, {project_node: {
-        "toolset": "target",
-        "default_configuration": "Default",
-        "configurations": {
-            "Default": targetconfig(),
-            "Debug": targetconfig(True),
-            "Release": targetconfig(False)
-            },
-        "type": "executable",
-        "sources": [source]
-        }}, source, {
+    target_dicts = {}
+    for target in target_list:
+        target_dicts[target] = {
+            "toolset": "target",
+            "default_configuration": "Default",
+            "configurations": {
+                "Default": targetconfig(),
+                "Debug": targetconfig(True),
+                "Release": targetconfig(False)
+                },
+            "type": "executable",
+            "sources": [source]
+            }
+    xcode.GenerateOutput(target_list, target_dict, target_list[0], {
         "options": Options()
         }, config)
 
