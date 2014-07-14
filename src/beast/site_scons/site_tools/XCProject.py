@@ -14,6 +14,10 @@ Necessary for working with .xcodeproj files.
 
 from __future__ import with_statement
 
+import os
+
+from VSProject import xsorted
+
 import SCons.Builder
 import SCons.Node.FS
 import SCons.Node
@@ -24,38 +28,48 @@ from gyp import xcode
 xcodeproj = xcode.xcodeproj_file
 
 
+# Utils: ---------------------------------------------------------------------------
+
+
+def makeList(x):
+    if x:
+        if type(x) is list:
+            return x
+        else:
+            return [x]
+    else:
+        return []
+
+
 # Main: ----------------------------------------------------------------------------
 
 
-class _ProjectGenerator(object):
-    """Generate A Project File For XCode."""
-
-    def __init__(self, project_node, filters_node, env):
-        try:
-            self.configs = xsorted(env['XCPROJECT_CONFIGS'], key=lambda x: x.name)
-        except KeyError:
-            raise ValueError ('Missing XCPROJECT_CONFIGS')
-        self.root_dir = os.getcwd()
-        self.root_dirs = [os.path.abspath(x) for x in makeList(env['XCPROJECT_ROOT_DIRS'])]
-        self.project_dir = os.path.dirname(os.path.abspath(str(project_node)))
-        self.project_node = project_node
-        self.project_file = None
-        self.filters_node = filters_node
-        self.filters_file = None
-
-    def build(self):
-        try:
-            self.project_file = open(str(self.project_node), 'wb')
-        except IOError, detail:
-            raise SCons.Errors.InternalError('Unable to open "' +
-                str(self.project_node) + '" for writing:' + str(detail))
-        self.writeProject()
-        self.project_file.close()
+class Options(object):
+    suffix = ""
+    generator_output = ""
 
 
 def buildProject(target, source, env):
-    g = _ProjectGenerator (target[0], target[1], env)
-    g.build()
+    try:
+        config = env["XCPROJECT_CONFIG"]
+    except KeyError:
+        raise ValueError ("Missing XCPROJECT_CONFIG")
+    root_dir = os.getcwd()
+    root_dirs = [os.path.abspath(x) for x in makeList(env["XCPROJECT_ROOT_DIRS"])]
+    project_node = "".join(list(target))
+    xcode.GenerateOutput(project_node, {project_node: {
+        "toolset": "target",
+        "default_configuration": "Default",
+        "configurations": {
+            "Default": targetconfig(),
+            "Debug": targetconfig(True),
+            "Release": targetconfig(False)
+            },
+        "type": "executable",
+        "sources": [source]
+        }}, source, {
+        "options": Options()
+        }, config)
 
 
 def projectEmitter(target, source, env):

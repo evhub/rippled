@@ -107,11 +107,12 @@ def CreateXCConfigurationList(configuration_names):
 
 
 class XcodeProject(object):
-  def __init__(self, fake_gyp, path, build_file_dict):
+  def __init__(self, build_path, path, build_file_dict):
+    self.build_path = build_path
     self.path = path
     self.project = xcodeproj_file.PBXProject(path=path)
     projectDirPath = common.RelativePath(
-                         os.path.dirname(os.path.abspath(self.gyp_path)),
+                         os.path.dirname(os.path.abspath(self.build_path)),
                          os.path.dirname(path) or '.')
     self.project.SetProperty('projectDirPath', projectDirPath)
     self.project_file = \
@@ -146,12 +147,8 @@ class XcodeProject(object):
     # Replace the XCConfigurationList attached to the PBXProject object with
     # a new one specifying all of the configuration names used by the various
     # targets.
-    try:
-      xccl = CreateXCConfigurationList(configurations)
-      self.project.SetProperty('buildConfigurationList', xccl)
-    except:
-      sys.stderr.write("Problem with gyp file %s\n" % self.gyp_path)
-      raise
+    xccl = CreateXCConfigurationList(configurations)
+    self.project.SetProperty('buildConfigurationList', xccl)
 
     # The need for this setting is explained above where _intermediate_var is
     # defined.  The comments below about wanting to avoid project-wide build
@@ -226,7 +223,7 @@ class XcodeProject(object):
     for target in self.build_file_dict['targets']:
       target_name = target['target_name']
       toolset = target['toolset']
-      qualified_target = common.QualifiedTarget(self.gyp_path, target_name,
+      qualified_target = common.QualifiedTarget(self.build_path, target_name,
                                                     toolset)
       xcode_target = xcode_targets[qualified_target]
       # Make sure that the target being added to the sorted list is already in
@@ -371,7 +368,7 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
       if int(bf_tgt.get('xcode_create_dependents_test_runner', 0)):
         tgt_name = bf_tgt['target_name']
         toolset = bf_tgt['toolset']
-        qualified_target = common.QualifiedTarget(self.gyp_path,
+        qualified_target = common.QualifiedTarget(self.build_path,
                                                       tgt_name, toolset)
         xcode_target = xcode_targets[qualified_target]
         if isinstance(xcode_target, xcodeproj_file.PBXAggregateTarget):
@@ -559,16 +556,13 @@ def EscapeXcodeDefine(s):
   return re.sub(_xcode_define_re, r'\\\1', s)
 
 
-def PerformBuild(data, configurations, params):
+def PerformBuild(build_file, build_file_dict, configurations, params):
   options = params['options']
 
-  for build_file, build_file_dict in data.iteritems():
-    (build_file_root, build_file_ext) = os.path.splitext(build_file)
-    if build_file_ext != '.gyp':
-      continue
-    xcodeproj_path = build_file_root + options.suffix + '.xcodeproj'
-    if options.generator_output:
-      xcodeproj_path = os.path.join(options.generator_output, xcodeproj_path)
+  (build_file_root, build_file_ext) = os.path.splitext(build_file)
+  xcodeproj_path = build_file_root + options.suffix + '.xcodeproj'
+  if options.generator_output:
+    xcodeproj_path = os.path.join(options.generator_output, xcodeproj_path)
 
   for config in configurations:
     arguments = ['xcodebuild', '-project', xcodeproj_path]
@@ -577,7 +571,7 @@ def PerformBuild(data, configurations, params):
     subprocess.check_call(arguments)
 
 
-def GenerateOutput(target_list, target_dicts, data, params):
+def GenerateOutput(target_list, target_dicts, build_file, build_file_dict, params):
 # Disabled because ninja support is not wanted. Old Code:
 ##  # Optionally configure each spec to use ninja as the external builder.
 ##  ninja_wrapper = params.get('flavor') == 'ninja'
@@ -593,31 +587,28 @@ def GenerateOutput(target_list, target_dicts, data, params):
   project_version = generator_flags.get('xcode_project_version', None)
   skip_excluded_files = \
       not generator_flags.get('xcode_list_excluded_files', True)
-  xcode_projects = {}
-  for build_file, build_file_dict in data.iteritems():
-    (build_file_root, build_file_ext) = os.path.splitext(build_file)
-    if build_file_ext != '.gyp':
-      continue
-    xcodeproj_path = build_file_root + options.suffix + '.xcodeproj'
-    if options.generator_output:
-      xcodeproj_path = os.path.join(options.generator_output, xcodeproj_path)
-    xcp = XcodeProject(build_file, xcodeproj_path, build_file_dict)
-    xcode_projects[build_file] = xcp
-    pbxp = xcp.project
 
-    if parallel_builds:
-      pbxp.SetProperty('attributes',
-                       {'BuildIndependentTargetsInParallel': 'YES'})
-    if project_version:
-      xcp.project_file.SetXcodeVersion(project_version)
+  (build_file_root, build_file_ext) = os.path.splitext(build_file)
+  xcodeproj_path = build_file_root + options.suffix + '.xcodeproj'
+  if options.generator_output:
+    xcodeproj_path = os.path.join(options.generator_output, xcodeproj_path)
+  xcp = XcodeProject(build_file, xcodeproj_path, build_file_dict)
+  xcode_project = xcp
+  pbxp = xcp.project
 
-    # Add gyp/gypi files to project
-    if not generator_flags.get('standalone'):
-      main_group = pbxp.GetProperty('mainGroup')
-      build_group = xcodeproj_file.PBXGroup({'name': 'Build'})
-      main_group.AppendChild(build_group)
-      for included_file in build_file_dict['included_files']:
-        build_group.AddOrGetFileByPath(included_file, False)
+  if parallel_builds:
+    pbxp.SetProperty('attributes',
+                     {'BuildIndependentTargetsInParallel': 'YES'})
+  if project_version:
+    xcp.project_file.SetXcodeVersion(project_version)
+
+  # Add gyp/gypi files to project
+  if not generator_flags.get('standalone'):
+    main_group = pbxp.GetProperty('mainGroup')
+    build_group = xcodeproj_file.PBXGroup({'name': 'Build'})
+    main_group.AppendChild(build_group)
+    for included_file in build_file_dict['included_files']:
+      build_group.AddOrGetFileByPath(included_file, False)
 
   xcode_targets = {}
   xcode_target_to_target_dict = {}
@@ -634,7 +625,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     for configuration_name in sorted(spec['configurations'].keys()):
       if configuration_name not in configuration_names:
         configuration_names.append(configuration_name)
-    xcp = xcode_projects[build_file]
+    xcp = xcode_project
     pbxp = xcp.project
 
     # Set up the configurations for the target according to the list of names
@@ -943,7 +934,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         # target "t" rule "A_r" and target "t_A" rule "r".
         makefile_name = '%s.make' % re.sub(
             '[^a-zA-Z0-9_]', '_' , '%s_%s' % (target_name, rule['rule_name']))
-        makefile_path = os.path.join(xcode_projects[build_file].path,
+        makefile_path = os.path.join(xcode_project.path,
                                      makefile_name)
         # TODO(mark): try/close?  Write to a temporary file and swap it only
         # if it's got changes?
@@ -1223,17 +1214,9 @@ exit 1
             configuration['xcode_config_file'])
         xcbc.SetBaseConfiguration(config_ref)
 
-  build_files = []
-  for build_file, build_file_dict in data.iteritems():
-    if build_file.endswith('.gyp'):
-      build_files.append(build_file)
+  xcode_project.Finalize1(xcode_targets, serialize_all_tests)
 
-  for build_file in build_files:
-    xcode_projects[build_file].Finalize1(xcode_targets, serialize_all_tests)
+  xcode_project.Finalize2(xcode_targets,
+                           xcode_target_to_target_dict)
 
-  for build_file in build_files:
-    xcode_projects[build_file].Finalize2(xcode_targets,
-                                         xcode_target_to_target_dict)
-
-  for build_file in build_files:
-    xcode_projects[build_file].Write()
+  xcode_project.Write()
