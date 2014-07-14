@@ -1502,10 +1502,10 @@ def _TopologicallySortedEnvVarKeys(env):
     # Topologically sort, and then reverse, because we used an edge definition
     # that's inverted from the expected result of this function (see comment
     # above).
-    order = gyp.common.TopologicallySorted(env.keys(), GetEdges)
+    order = common.TopologicallySorted(env.keys(), GetEdges)
     order.reverse()
     return order
-  except gyp.common.CycleError, e:
+  except common.CycleError, e:
     raise GypError(
         'Xcode environment variables are cyclically dependent: ' + str(e.nodes))
 
@@ -1525,7 +1525,7 @@ def GetSpecPostbuildCommands(spec, quiet=False):
     if not quiet:
       postbuilds.append('echo POSTBUILD\\(%s\\) %s' % (
             spec['target_name'], postbuild['postbuild_name']))
-    postbuilds.append(gyp.common.EncodePOSIXShellList(postbuild['action']))
+    postbuilds.append(common.EncodePOSIXShellList(postbuild['action']))
   return postbuilds
 
 

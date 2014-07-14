@@ -335,7 +335,7 @@ def WriteOnDiff(filename):
       # Pick temporary file.
       tmp_fd, self.tmp_path = tempfile.mkstemp(
           suffix='.tmp',
-          prefix=os.path.split(filename)[1] + '.gyp.',
+          prefix=os.path.split(filename)[1],
           dir=os.path.split(filename)[0])
       try:
         self.tmp_file = os.fdopen(tmp_fd, 'wb')

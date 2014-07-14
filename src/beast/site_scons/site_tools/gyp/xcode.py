@@ -95,11 +95,11 @@ xcode_standard_library_dirs = frozenset([
 ])
 
 def CreateXCConfigurationList(configuration_names):
-  xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
+  xccl = xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
   if len(configuration_names) == 0:
     configuration_names = ['Default']
   for configuration_name in configuration_names:
-    xcbc = gyp.xcodeproj_file.XCBuildConfiguration({
+    xcbc = xcodeproj_file.XCBuildConfiguration({
         'name': configuration_name})
     xccl.AppendProperty('buildConfigurations', xcbc)
   xccl.SetProperty('defaultConfigurationName', configuration_names[0])
@@ -107,16 +107,15 @@ def CreateXCConfigurationList(configuration_names):
 
 
 class XcodeProject(object):
-  def __init__(self, gyp_path, path, build_file_dict):
-    self.gyp_path = gyp_path
+  def __init__(self, fake_gyp, path, build_file_dict):
     self.path = path
-    self.project = gyp.xcodeproj_file.PBXProject(path=path)
-    projectDirPath = gyp.common.RelativePath(
+    self.project = xcodeproj_file.PBXProject(path=path)
+    projectDirPath = common.RelativePath(
                          os.path.dirname(os.path.abspath(self.gyp_path)),
                          os.path.dirname(path) or '.')
     self.project.SetProperty('projectDirPath', projectDirPath)
     self.project_file = \
-        gyp.xcodeproj_file.XCProjectFile({'rootObject': self.project})
+        xcodeproj_file.XCProjectFile({'rootObject': self.project})
     self.build_file_dict = build_file_dict
 
     # TODO(mark): add destructor that cleans up self.path if created_dir is
@@ -227,7 +226,7 @@ class XcodeProject(object):
     for target in self.build_file_dict['targets']:
       target_name = target['target_name']
       toolset = target['toolset']
-      qualified_target = gyp.common.QualifiedTarget(self.gyp_path, target_name,
+      qualified_target = common.QualifiedTarget(self.gyp_path, target_name,
                                                     toolset)
       xcode_target = xcode_targets[qualified_target]
       # Make sure that the target being added to the sorted list is already in
@@ -251,7 +250,7 @@ class XcodeProject(object):
         # Make a target to run something.  It should have one
         # dependency, the parent xcode target.
         xccl = CreateXCConfigurationList(configurations)
-        run_target = gyp.xcodeproj_file.PBXAggregateTarget({
+        run_target = xcodeproj_file.PBXAggregateTarget({
               'name':                   'Run ' + target_name,
               'productName':            xcode_target.GetProperty('productName'),
               'buildConfigurationList': xccl,
@@ -263,13 +262,13 @@ class XcodeProject(object):
         script = ''
         if command.get('working_directory'):
           script = script + 'cd "%s"\n' % \
-                   gyp.xcodeproj_file.ConvertVariablesToShellSyntax(
+                   xcodeproj_file.ConvertVariablesToShellSyntax(
                        command.get('working_directory'))
 
         if command.get('environment'):
           script = script + "\n".join(
             ['export %s="%s"' %
-             (key, gyp.xcodeproj_file.ConvertVariablesToShellSyntax(val))
+             (key, xcodeproj_file.ConvertVariablesToShellSyntax(val))
              for (key, val) in command.get('environment').iteritems()]) + "\n"
 
         # Some test end up using sockets, files on disk, etc. and can get
@@ -290,10 +289,10 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
         # with an error, and fixup variable references to be shell
         # syntax instead of xcode syntax.
         script = script + 'exec ' + command_prefix + '%s\nexit 1\n' % \
-                 gyp.xcodeproj_file.ConvertVariablesToShellSyntax(
-                     gyp.common.EncodePOSIXShellList(command.get('action')))
+                 xcodeproj_file.ConvertVariablesToShellSyntax(
+                     common.EncodePOSIXShellList(command.get('action')))
 
-        ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+        ssbp = xcodeproj_file.PBXShellScriptBuildPhase({
               'shellScript':      script,
               'showEnvVarsInLog': 0,
             })
@@ -325,7 +324,7 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
     # time will build everything by default.
     if len(targets_for_all) > 1 and not has_custom_all:
       xccl = CreateXCConfigurationList(configurations)
-      all_target = gyp.xcodeproj_file.PBXAggregateTarget(
+      all_target = xcodeproj_file.PBXAggregateTarget(
           {
             'buildConfigurationList': xccl,
             'name':                   'All',
@@ -343,7 +342,7 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
     # The same, but for run_test_targets.
     if len(run_test_targets) > 1:
       xccl = CreateXCConfigurationList(configurations)
-      run_all_tests_target = gyp.xcodeproj_file.PBXAggregateTarget(
+      run_all_tests_target = xcodeproj_file.PBXAggregateTarget(
           {
             'buildConfigurationList': xccl,
             'name':                   'Run All Tests',
@@ -372,10 +371,10 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
       if int(bf_tgt.get('xcode_create_dependents_test_runner', 0)):
         tgt_name = bf_tgt['target_name']
         toolset = bf_tgt['toolset']
-        qualified_target = gyp.common.QualifiedTarget(self.gyp_path,
+        qualified_target = common.QualifiedTarget(self.gyp_path,
                                                       tgt_name, toolset)
         xcode_target = xcode_targets[qualified_target]
-        if isinstance(xcode_target, gyp.xcodeproj_file.PBXAggregateTarget):
+        if isinstance(xcode_target, xcodeproj_file.PBXAggregateTarget):
           # Collect all the run test targets.
           all_run_tests = []
           pbxtds = xcode_target.GetProperty('dependencies')
@@ -388,7 +387,7 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
           # Directly depend on all the runners as they depend on the target
           # that builds them.
           if len(all_run_tests) > 0:
-            run_all_target = gyp.xcodeproj_file.PBXAggregateTarget({
+            run_all_target = xcodeproj_file.PBXAggregateTarget({
                   'name':        'Run %s Tests' % tgt_name,
                   'productName': tgt_name,
                 },
@@ -437,7 +436,7 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
     # Writing to a temporary file first also avoids the possible problem of
     # Xcode rereading an incomplete project file.
     (output_fd, new_pbxproj_path) = \
-        tempfile.mkstemp(suffix='.tmp', prefix='project.pbxproj.gyp.',
+        tempfile.mkstemp(suffix='.tmp', prefix='project.pbxproj',
                          dir=self.path)
 
     try:
@@ -584,7 +583,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
 ##  ninja_wrapper = params.get('flavor') == 'ninja'
 ##  if ninja_wrapper:
 ##    (target_list, target_dicts, data) = \
-##        gyp.xcode_ninja.CreateWrapper(target_list, target_dicts, data, params)
+##        xcode_ninja.CreateWrapper(target_list, target_dicts, data, params)
 
   options = params['options']
   generator_flags = params.get('generator_flags', {})
@@ -615,7 +614,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # Add gyp/gypi files to project
     if not generator_flags.get('standalone'):
       main_group = pbxp.GetProperty('mainGroup')
-      build_group = gyp.xcodeproj_file.PBXGroup({'name': 'Build'})
+      build_group = xcodeproj_file.PBXGroup({'name': 'Build'})
       main_group.AppendChild(build_group)
       for included_file in build_file_dict['included_files']:
         build_group.AddOrGetFileByPath(included_file, False)
@@ -624,7 +623,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   xcode_target_to_target_dict = {}
   for qualified_target in target_list:
     [build_file, target_name, toolset] = \
-        gyp.common.ParseQualifiedTarget(qualified_target)
+        common.ParseQualifiedTarget(qualified_target)
 
     spec = target_dicts[qualified_target]
     if spec['toolset'] != 'target':
@@ -676,15 +675,15 @@ def GenerateOutput(target_list, target_dicts, data, params):
       elif is_bundle:
         type_bundle_key += '+bundle'
 
-      xctarget_type = gyp.xcodeproj_file.PBXNativeTarget
+      xctarget_type = xcodeproj_file.PBXNativeTarget
       try:
         target_properties['productType'] = _types[type_bundle_key]
       except KeyError, e:
-        gyp.common.ExceptionAppend(e, "-- unknown product type while "
+        common.ExceptionAppend(e, "-- unknown product type while "
                                    "writing target %s" % target_name)
         raise
     else:
-      xctarget_type = gyp.xcodeproj_file.PBXAggregateTarget
+      xctarget_type = xcodeproj_file.PBXAggregateTarget
       assert not is_bundle, (
           'mac_bundle targets cannot have type none (target "%s")' %
           target_name)
@@ -729,7 +728,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         support_target_properties['productName'] = \
             target_product_name + ' Support'
       support_xct = \
-          gyp.xcodeproj_file.PBXAggregateTarget(support_target_properties,
+          xcodeproj_file.PBXAggregateTarget(support_target_properties,
                                                 parent=pbxp)
       pbxp.AppendProperty('targets', support_xct)
       xct.AddDependency(support_xct)
@@ -748,17 +747,17 @@ def GenerateOutput(target_list, target_dicts, data, params):
       # Do we have a message to print when this action runs?
       message = action.get('message')
       if message:
-        message = 'echo note: ' + gyp.common.EncodePOSIXShellArgument(message)
+        message = 'echo note: ' + common.EncodePOSIXShellArgument(message)
       else:
         message = ''
 
       # Turn the list into a string that can be passed to a shell.
-      action_string = gyp.common.EncodePOSIXShellList(action['action'])
+      action_string = common.EncodePOSIXShellList(action['action'])
 
       # Convert Xcode-type variable references to sh-compatible environment
       # variable references.
-      message_sh = gyp.xcodeproj_file.ConvertVariablesToShellSyntax(message)
-      action_string_sh = gyp.xcodeproj_file.ConvertVariablesToShellSyntax(
+      message_sh = xcodeproj_file.ConvertVariablesToShellSyntax(message)
+      action_string_sh = xcodeproj_file.ConvertVariablesToShellSyntax(
         action_string)
 
       script = ''
@@ -768,7 +767,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
       # Be sure the script runs in exec, and that if exec fails, the script
       # exits signalling an error.
       script += 'exec ' + action_string_sh + '\nexit 1\n'
-      ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+      ssbp = xcodeproj_file.PBXShellScriptBuildPhase({
             'inputPaths': action['inputs'],
             'name': 'Action "' + action['action_name'] + '"',
             'outputPaths': action['outputs'],
@@ -929,12 +928,12 @@ def GenerateOutput(target_list, target_dicts, data, params):
         # Do we have a message to print when this rule runs?
         message = rule.get('message')
         if message:
-          message = gyp.common.EncodePOSIXShellArgument(message)
+          message = common.EncodePOSIXShellArgument(message)
           message = ExpandXcodeVariables(message, rule_input_dict)
         messages.append(message)
 
         # Turn the list into a string that can be passed to a shell.
-        action_string = gyp.common.EncodePOSIXShellList(rule['action'])
+        action_string = common.EncodePOSIXShellList(rule['action'])
 
         action = ExpandXcodeVariables(action_string, rule_input_dict)
         actions.append(action)
@@ -1051,7 +1050,7 @@ fi
 exec xcrun make -f "${PROJECT_FILE_PATH}/%s" -j "${JOB_COUNT}"
 exit 1
 """ % makefile_name
-        ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+        ssbp = xcodeproj_file.PBXShellScriptBuildPhase({
               'name': 'Rule "' + rule['rule_name'] + '"',
               'shellScript': script,
               'showEnvVarsInLog': 0,
@@ -1117,14 +1116,14 @@ exit 1
       # they'll wind up with ID collisions.
       pbxcp = pbxcp_dict.get(dest, None)
       if pbxcp is None:
-        pbxcp = gyp.xcodeproj_file.PBXCopyFilesBuildPhase({
+        pbxcp = xcodeproj_file.PBXCopyFilesBuildPhase({
               'name': 'Copy to ' + copy_group['destination']
             },
             parent=xct)
         pbxcp.SetDestination(dest)
 
         # TODO(mark): The usual comment about this knowing too much about
-        # gyp.xcodeproj_file internals applies.
+        # xcodeproj_file internals applies.
         xct._properties['buildPhases'].insert(prebuild_index, pbxcp)
 
         pbxcp_dict[dest] = pbxcp
@@ -1153,7 +1152,7 @@ exit 1
             pbxp.AddOrGetFileInRootGroup(item)
 
     for postbuild in spec.get('postbuilds', []):
-      action_string_sh = gyp.common.EncodePOSIXShellList(postbuild['action'])
+      action_string_sh = common.EncodePOSIXShellList(postbuild['action'])
       script = 'exec ' + action_string_sh + '\nexit 1\n'
 
       # Make the postbuild step depend on the output of ld or ar from this
@@ -1161,7 +1160,7 @@ exit 1
       # sufficient to ensure proper ordering in all cases. With an input
       # declared but no outputs, the script step should run every time, as
       # desired.
-      ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+      ssbp = xcodeproj_file.PBXShellScriptBuildPhase({
             'inputPaths': ['$(BUILT_PRODUCTS_DIR)/$(EXECUTABLE_PATH)'],
             'name': 'Postbuild "' + postbuild['postbuild_name'] + '"',
             'shellScript': script,

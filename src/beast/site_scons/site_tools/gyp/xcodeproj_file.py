@@ -695,7 +695,7 @@ class XCObject(object):
         printable_value = printable_value[1:-1]
       printable += printable_key + ' = ' + printable_value + ';' + after_kv
     except TypeError, e:
-      gyp.common.ExceptionAppend(e,
+      common.ExceptionAppend(e,
                                  'while printing key "%s"' % key)
       raise
 
@@ -1030,7 +1030,7 @@ class XCHierarchicalElement(XCObject):
     # This function should be used only to compare direct children of the
     # containing PBXProject's mainGroup.  These groups should appear in the
     # listed order.
-    # TODO(mark): "Build" is used by gyp.generator.xcode, perhaps the
+    # TODO(mark): "Build" is used by generator.xcode, perhaps the
     # generator should have a way of influencing this list rather than having
     # to hardcode for the generator here.
     order = ['Source', 'Intermediates', 'Projects', 'Frameworks', 'Products',
@@ -2256,7 +2256,7 @@ class PBXNativeTarget(XCTarget):
                                                  '', ''],
     'com.apple.product-type.bundle.unit-test':  ['wrapper.cfbundle',
                                                  '', '.xctest'],
-    'com.googlecode.gyp.xcode.bundle':          ['compiled.mach-o.dylib',
+    'com.googlecode.xcode.bundle':          ['compiled.mach-o.dylib',
                                                  '', '.so'],
   }
 
@@ -2281,7 +2281,7 @@ class PBXNativeTarget(XCTarget):
         # pure BSD targets (not in a bundle wrapper). GYP allows such modules
         # to be specified by setting a target type to loadable_module without
         # having mac_bundle set. These are mapped to the pseudo-product type
-        # com.googlecode.gyp.xcode.bundle.
+        # com.googlecode.xcode.bundle.
         #
         # By picking up this special type and converting it to a dynamic
         # library (com.apple.product-type.library.dynamic) with fix-ups,
@@ -2300,7 +2300,7 @@ class PBXNativeTarget(XCTarget):
         # don't distinguish between linkable shared libraries and non-linkable
         # loadable modules, but there's precedent: Python loadable modules on
         # Mac OS X use an .so extension.
-        if self._properties['productType'] == 'com.googlecode.gyp.xcode.bundle':
+        if self._properties['productType'] == 'com.googlecode.xcode.bundle':
           self._properties['productType'] = \
               'com.apple.product-type.library.dynamic'
           self.SetBuildSetting('MACH_O_TYPE', 'mh_bundle')
@@ -2592,7 +2592,7 @@ class PBXProject(XCContainerPortal):
     # TODO(mark): make this a class variable and bind to self on call?
     # Also, this list is nowhere near exhaustive.
     # INTERMEDIATE_DIR and SHARED_INTERMEDIATE_DIR are used by
-    # gyp.generator.xcode.  There should probably be some way for that module
+    # generator.xcode.  There should probably be some way for that module
     # to push the names in, rather than having to hard-code them here.
     source_tree_groups = {
       'DERIVED_FILE_DIR':         (self.IntermediatesGroup, True),
@@ -2709,7 +2709,7 @@ class PBXProject(XCContainerPortal):
           this_path = projectDirPath
         else:
           this_path = posixpath.join(this_path, projectDirPath)
-      other_path = gyp.common.RelativePath(other_pbxproject.Path(), this_path)
+      other_path = common.RelativePath(other_pbxproject.Path(), this_path)
 
       # ProjectRef is weak (it's owned by the mainGroup hierarchy).
       project_ref = PBXFileReference({
