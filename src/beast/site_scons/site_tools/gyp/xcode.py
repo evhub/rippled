@@ -242,7 +242,7 @@ class XcodeProject(object):
         targets_for_all.append(xcode_target)
 
       if target_name.lower() == 'all':
-        has_custom_all = True;
+        has_custom_all = True
 
       # If this target has a 'run_as' attribute, add its target to the
       # targets, and add it to the test targets.
@@ -716,8 +716,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # The Xcode "issues" don't affect xcode-ninja builds, since the dependency
     # logic all happens in ninja.  Don't bother creating the extra targets in
     # that case.
-    if type != 'none' and (spec_actions or spec_rules) and not ninja_wrapper:
-      support_xccl = CreateXCConfigurationList(configuration_names);
+    if type != 'none' and (spec_actions or spec_rules): # and not ninja_wrapper:
+      support_xccl = CreateXCConfigurationList(configuration_names)
       support_target_suffix = generator_flags.get(
           'support_target_suffix', ' Support')
       support_target_properties = {

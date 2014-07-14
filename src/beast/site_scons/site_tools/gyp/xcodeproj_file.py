@@ -2506,7 +2506,7 @@ class PBXProject(XCContainerPortal):
   })
 
   def __init__(self, properties=None, id=None, parent=None, path=None):
-    self.path = path
+    self.path = path # <!> Should always pass path
     self._other_pbxprojects = {}
     # super
     return XCContainerPortal.__init__(self, properties, id, parent)
@@ -2833,7 +2833,7 @@ class XCProjectFile(XCObject):
     compatibility_version = 'Xcode %s' % version
     self._properties['rootObject'].SetProperty('compatibilityVersion',
                                                compatibility_version)
-    self.SetProperty('objectVersion', version_to_object_version[version]);
+    self.SetProperty('objectVersion', version_to_object_version[version])
 
   def ComputeIDs(self, recursive=True, overwrite=True, hash=None):
     # Although XCProjectFile is implemented here as an XCObject, it's not a
