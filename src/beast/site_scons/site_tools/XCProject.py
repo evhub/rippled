@@ -47,6 +47,9 @@ def makeList(x):
 class Options(object):
     suffix = ""
     generator_output = ""
+    def __init__(self, config):
+        for k,v in config.items():
+            setattr(self, k, v)
 
 
 def buildProject(target_list, source, env):
@@ -54,8 +57,6 @@ def buildProject(target_list, source, env):
         config = env["XCPROJECT_CONFIG"]
     except KeyError:
         raise ValueError ("Missing XCPROJECT_CONFIG")
-    root_dir = os.getcwd()
-    root_dirs = [os.path.abspath(x) for x in makeList(env["XCPROJECT_ROOT_DIRS"])]
     target_dicts = {}
     for target in target_list:
         target_dicts[target] = {
@@ -69,9 +70,12 @@ def buildProject(target_list, source, env):
             "type": "executable",
             "sources": [source]
             }
-    xcode.GenerateOutput(target_list, target_dict, target_list[0], {
-        "options": Options()
-        }, config)
+        target_dicts[target].update(config)
+    params = {
+        "options": Options(config)
+        }
+    params.update(config)
+    xcode.GenerateOutput(target_list, target_dict, os.getcwd(), params)
 
 
 def projectEmitter(target, source, env):
