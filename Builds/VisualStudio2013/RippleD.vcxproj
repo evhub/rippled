@@ -131,30 +131,26 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\module\app\data\DBInit.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple\module\app\consensus\DisputedTx.h">
+    <ClInclude Include="..\..\src\ripple\module\app\consensus\LedgerConsensus.h">
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\module\app\main\Application.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClInclude Include="..\..\src\ripple\common\ResolverAsio.h">
-    </ClInclude>
-    <ClInclude Include="..\..\src\ripple\common\jsonrpc_fields.h">
-    </ClInclude>
-    <ClInclude Include="..\..\src\ripple\module\app\websocket\WSServerHandler.h">
-    </ClInclude>
-    <ClInclude Include="..\..\src\ripple\module\app\websocket\WSDoor.h">
-    </ClInclude>
-    <ClInclude Include="..\..\src\ripple\module\app\consensus\LedgerConsensus.h">
-    </ClInclude>
-    <ClInclude Include="..\..\src\beast\beast\module\sqlite\sqlite.h">
+    <ClInclude Include="..\..\src\ripple\module\app\consensus\DisputedTx.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\common\KeyCache.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\common\TaggedCache.h">
     </ClInclude>
+    <ClInclude Include="..\..\src\ripple\common\ResolverAsio.h">
+    </ClInclude>
+    <ClInclude Include="..\..\src\beast\beast\module\sqlite\sqlite.h">
+    </ClInclude>
     <ClInclude Include="..\..\src\ripple\unity\net.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\unity\resource.h">
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple\module\app\websocket\WSServerHandler.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\unity\rpcx.h">
     </ClInclude>
@@ -200,29 +196,33 @@
     </ClInclude>
     <ClInclude Include="..\..\src\beast\beast\threads\Thread.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple\module\app\node\SqliteFactory.h">
+    <ClInclude Include="..\..\src\ripple\module\app\main\IoServicePool.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple\module\app\main\NodeStoreScheduler.h">
+    <ClInclude Include="..\..\src\beast\beast\unit_test.h">
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple\module\app\websocket\WSDoor.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\common\RippleSSLContext.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\module\app\main\RPCHTTPServer.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple\module\app\main\IoServicePool.h">
-    </ClInclude>
-    <ClInclude Include="..\..\src\beast\beast\unit_test.h">
+    <ClInclude Include="..\..\src\ripple\module\rpc\RPCServerHandler.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\basics\system\CheckLibraryVersions.h">
     </ClInclude>
+    <ClInclude Include="..\..\src\ripple\module\app\main\NodeStoreScheduler.h">
+    </ClInclude>
     <ClInclude Include="..\..\src\ripple\basics\utility\ThreadName.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple\module\app\tx\TxQueue.h">
+    <ClInclude Include="..\..\src\ripple\common\jsonrpc_fields.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\module\rpc\RPCHandler.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple\module\rpc\RPCServerHandler.h">
+    <ClInclude Include="..\..\src\ripple\module\app\node\SqliteFactory.h">
     </ClInclude>
-    <ClCompile Include="..\..\src\ripple\module\app\main\IoServicePool.cpp">
+    <ClInclude Include="..\..\src\ripple\module\app\tx\TxQueue.h">
+    </ClInclude>
+    <ClCompile Include="..\..\src\ripple\module\app\websocket\WSConnection.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\app\main\CollectorManager.cpp">
@@ -231,7 +231,7 @@
     <ClCompile Include="..\..\src\ripple\module\app\main\FatalErrorReporter.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\app\websocket\WSConnection.cpp">
+    <ClCompile Include="..\..\src\ripple\module\app\main\IoServicePool.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\app\main\Main.cpp">
@@ -480,19 +480,19 @@
     </ClInclude>
     <ClInclude Include="..\..\src\beast\beast\utility\Journal.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\beast\beast\chrono\basic_seconds_clock.h">
+    <ClInclude Include="..\..\src\beast\beast\chrono\abstract_clock.h">
     </ClInclude>
     <ClInclude Include="..\..\src\beast\beast\utility\noexcept.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\beast\beast\chrono\abstract_clock.h">
+    <ClInclude Include="..\..\src\beast\beast\chrono\basic_seconds_clock.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple\nodestore\NodeObject.h">
+    <ClInclude Include="..\..\src\beast\beast\module\core\files\File.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\module\app\misc\PowResult.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\module\app\misc\ProofOfWork.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\beast\beast\module\core\files\File.h">
+    <ClInclude Include="..\..\src\ripple\nodestore\NodeObject.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\nodestore\Scheduler.h">
     </ClInclude>
@@ -732,11 +732,11 @@
     </ClInclude>
     <ClInclude Include="..\..\src\beast\beast\net\IPEndpoint.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\beast\beast\asio\placeholders.h">
+    <ClInclude Include="..\..\src\beast\beast\asio\bind_handler.h">
     </ClInclude>
     <ClInclude Include="..\..\src\beast\beast\smart_ptr\SharedPtr.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\beast\beast\asio\bind_handler.h">
+    <ClInclude Include="..\..\src\beast\beast\asio\placeholders.h">
     </ClInclude>
     <ClInclude Include="..\..\src\beast\beast\insight\Collector.h">
     </ClInclude>
@@ -1152,20 +1152,20 @@
     </ClInclude>
     <ClInclude Include="..\..\src\websocket\src\md5\md5.hpp">
     </ClInclude>
+    <ClCompile Include="..\..\src\ripple\module\app\consensus\LedgerConsensus.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
     <ClInclude Include="..\..\src\websocket\src\md5\md5.h">
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\unity\app1.cpp">
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\app\consensus\LedgerConsensus.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\app\ledger\LedgerCleaner.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\app\misc\ProofOfWorkFactory.cpp">
+    <ClCompile Include="..\..\src\ripple\module\app\ledger\LedgerMaster.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\app\ledger\LedgerMaster.cpp">
+    <ClCompile Include="..\..\src\ripple\module\app\misc\ProofOfWorkFactory.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\app\misc\SerializedTransaction.cpp">
@@ -1261,6 +1261,9 @@
     <ClCompile Include="..\..\src\ripple\module\app\shamap\SHAMapNodeID.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\app\ledger\LedgerTiming.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\app\book\tests\Quality.test.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
@@ -1281,24 +1284,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\unity\app5.cpp">
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\app\misc\FeeVoteImpl.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
     <ClInclude Include="..\..\src\ripple\basics\utility\Time.h">
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\module\app\book\tests\OfferStream.test.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\app\misc\Validations.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple\unity\app4.cpp">
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\app\ledger\LedgerTiming.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\app\main\LocalCredentials.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\app\tx\Transaction.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
@@ -1324,23 +1315,32 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\module\app\book\Offer.h">
     </ClInclude>
+    <ClInclude Include="..\..\src\ripple\peerfinder\api\Manager.h">
+    </ClInclude>
     <ClInclude Include="..\..\src\ripple\module\app\book\Amount.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\module\app\book\Amounts.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple\unity\peerfinder.h">
-    </ClInclude>
-    <ClInclude Include="..\..\src\ripple\peerfinder\api\Callback.h">
-    </ClInclude>
-    <ClCompile Include="..\..\src\ripple\module\app\consensus\DisputedTx.cpp">
+    <ClCompile Include="..\..\src\ripple\module\app\misc\Validations.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\app\misc\FeeVoteImpl.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\app\main\LocalCredentials.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClInclude Include="..\..\src\ripple\peerfinder\api\Callback.h">
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple\unity\peerfinder.h">
+    </ClInclude>
     <ClInclude Include="..\..\src\ripple\peerfinder\api\Config.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\peerfinder\api\Endpoint.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple\peerfinder\api\Manager.h">
-    </ClInclude>
+    <ClCompile Include="..\..\src\ripple\module\app\consensus\DisputedTx.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
     <ClInclude Include="..\..\src\ripple\peerfinder\api\Types.h">
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\unity\app6.cpp">
@@ -1392,23 +1392,26 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\module\app\paths\Tuning.h">
     </ClInclude>
-    <ClCompile Include="..\..\src\ripple\module\app\ledger\SerializedValidation.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple\unity\app7.cpp">
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\app\tx\LocalTxs.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\app\ledger\SerializedValidation.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple\unity\app8.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\unity\app9.cpp">
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\app\paths\PathRequest.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\app\paths\RippleCalc.cpp">
+    <ClCompile Include="..\..\src\ripple\module\app\paths\PathState.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\unity\app9.cpp">
+    <ClCompile Include="..\..\src\ripple\module\app\book\impl\BookTip.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\app\main\ParameterTable.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
@@ -1416,10 +1419,7 @@
     <ClCompile Include="..\..\src\ripple\module\app\paths\PathRequests.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\app\paths\PathState.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\app\book\impl\BookTip.cpp">
+    <ClCompile Include="..\..\src\ripple\module\app\paths\RippleCalc.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\app\book\impl\OfferStream.cpp">
@@ -1560,13 +1560,13 @@
     <ClCompile Include="..\..\src\ripple\basics\utility\IniFile.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
+    <ClInclude Include="..\..\src\beast\beast\http\get.h">
+    </ClInclude>
+    <ClInclude Include="..\..\src\beast\beast\http\method.h">
+    </ClInclude>
     <ClCompile Include="..\..\src\beast\beast\http\impl\http-parser\http_parser.c">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClInclude Include="..\..\src\beast\beast\http\method.h">
-    </ClInclude>
-    <ClInclude Include="..\..\src\beast\beast\http\get.h">
-    </ClInclude>
     <ClCompile Include="..\..\src\beast\beast\crypto\impl\sha2\sha2.c">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
@@ -1715,7 +1715,7 @@
     <ClCompile Include="..\..\src\beast\beast\module\sqdb\sqdb.unity.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\beast\beast\strings\Strings.unity.cpp">
+    <ClCompile Include="..\..\src\beast\beast\asio\tests\bind_handler.test.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\beast\beast\net\Net.unity.cpp">
@@ -1724,7 +1724,7 @@
     <ClCompile Include="..\..\src\beast\beast\streams\streams.unity.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\beast\beast\asio\tests\bind_handler.test.cpp">
+    <ClCompile Include="..\..\src\beast\beast\strings\Strings.unity.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\beast\beast\threads\Threads.unity.cpp">
@@ -2166,14 +2166,14 @@
     <ClCompile Include="..\..\src\ripple\common\impl\TaggedCache.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClInclude Include="..\..\src\ripple\common\impl\MultiSocketImpl.h">
-    </ClInclude>
     <ClCompile Include="..\..\src\ripple\common\impl\MultiSocket.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\common\impl\RippleSSLContext.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
+    <ClInclude Include="..\..\src\ripple\common\impl\MultiSocketImpl.h">
+    </ClInclude>
     <ClCompile Include="..\..\src\ripple\module\core\functional\Config.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
@@ -2220,9 +2220,6 @@
     <ClCompile Include="..\..\src\ripple\json\impl\JsonPropertyStream.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\http\impl\Port.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple\http\impl\ServerImpl.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
@@ -2238,14 +2235,27 @@
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\unity\json.cpp">
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple\peerfinder\impl\Bootcache.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\data\protocol\FieldNames.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\http\impl\Port.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\data\protocol\BuildInfo.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
+    <ClInclude Include="..\..\src\ripple\peerfinder\impl\CheckerAdapter.h">
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple\peerfinder\impl\Checker.h">
+    </ClInclude>
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\Bootcache.h">
     </ClInclude>
+    <ClCompile Include="..\..\src\ripple\peerfinder\impl\Checker.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
     <ClInclude Include="..\..\src\ripple\http\impl\Peer.h">
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\module\data\protocol\HashPrefix.cpp">
@@ -2305,15 +2315,7 @@
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\unity\http.cpp">
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\peerfinder\impl\Bootcache.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple\types\impl\strHex.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClInclude Include="..\..\src\ripple\peerfinder\impl\CheckerAdapter.h">
-    </ClInclude>
-    <ClCompile Include="..\..\src\websocket\src\processors\hybi_util.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClInclude Include="..\..\src\ripple\validators\impl\Logic.h">
@@ -2321,24 +2323,24 @@
     <ClCompile Include="..\..\src\websocket\src\processors\hybi_header.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\peerfinder\impl\Checker.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClInclude Include="..\..\src\ripple\peerfinder\impl\Checker.h">
+    <ClInclude Include="..\..\src\ripple\validators\impl\ChosenList.h">
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\validators\impl\Source.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClInclude Include="..\..\src\ripple\validators\impl\Count.h">
-    </ClInclude>
-    <ClInclude Include="..\..\src\ripple\validators\impl\SourceDesc.h">
-    </ClInclude>
+    <ClCompile Include="..\..\src\websocket\src\processors\hybi_util.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple\validators\impl\Manager.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\types\impl\UintTypes.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
+    <ClInclude Include="..\..\src\ripple\validators\impl\Count.h">
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple\validators\impl\SourceDesc.h">
+    </ClInclude>
     <ClCompile Include="..\..\src\ripple\module\net\basics\HTTPClient.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
@@ -2365,13 +2367,8 @@
     <ClCompile Include="..\..\src\ripple\module\net\basics\SNTPClient.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\overlay\impl\message_name.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
     <ClInclude Include="..\..\src\ripple\module\net\basics\impl\RPCServerImp.h">
     </ClInclude>
-    <None Include="..\..\src\ripple\overlay\README.md">
-    </None>
     <ClInclude Include="..\..\src\ripple\json\impl\json_internalarray.inl">
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\json\impl\json_value.cpp">
@@ -2383,16 +2380,21 @@
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\unity\net.cpp">
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\overlay\impl\Message.cpp">
+    <ClCompile Include="..\..\src\ripple\overlay\impl\OverlayImpl.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\overlay\impl\OverlayImpl.cpp">
+    <None Include="..\..\src\ripple\overlay\README.md">
+    </None>
+    <ClCompile Include="..\..\src\ripple\overlay\impl\message_name.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\overlay\impl\PeerImp.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\net\rpc\RPCCall.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\overlay\impl\PeerImp.cpp">
+    <ClCompile Include="..\..\src\ripple\overlay\impl\Message.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\overlay\impl\PeerDoor.cpp">
@@ -2431,15 +2433,13 @@
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\unity\peerfinder.cpp">
     </ClCompile>
-    <ClInclude Include="..\..\src\ripple\validators\impl\ChosenList.h">
-    </ClInclude>
-    <ClCompile Include="..\..\src\ripple\unity\validators.cpp">
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple\peerfinder\impl\Config.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\Logic.h">
     </ClInclude>
+    <ClCompile Include="..\..\src\ripple\unity\validators.cpp">
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple\peerfinder\impl\ConnectHandouts.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
@@ -2509,6 +2509,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\beast\beast\container\aged_container_utility.h">
     </ClInclude>
+    <ClCompile Include="..\..\src\protobuf\src\google\protobuf\compiler\importer.cc">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\Fixed.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\RedirectHandouts.h">
@@ -2518,9 +2521,6 @@
     <ClInclude Include="..\..\src\ripple\peerfinder\impl\handout.h">
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\unity\protobuf.cpp">
-    </ClCompile>
-    <ClCompile Include="..\..\src\protobuf\src\google\protobuf\compiler\importer.cc">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClInclude Include="..\..\src\ripple\resource\impl\Entry.h">
     </ClInclude>
@@ -2532,13 +2532,15 @@
     <ClCompile Include="..\..\src\protobuf\src\google\protobuf\compiler\parser.cc">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\protobuf\src\google\protobuf\descriptor.pb.cc">
+    <ClCompile Include="..\..\src\protobuf\src\google\protobuf\extension_set.cc">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
+    <ClInclude Include="..\..\src\ripple\algorithm\api\DecayingSample.h">
+    </ClInclude>
     <ClCompile Include="..\..\src\protobuf\src\google\protobuf\descriptor.cc">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\protobuf\src\google\protobuf\extension_set.cc">
+    <ClCompile Include="..\..\src\protobuf\src\google\protobuf\descriptor.pb.cc">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\protobuf\src\google\protobuf\descriptor_database.cc">
@@ -2547,8 +2549,6 @@
     <ClCompile Include="..\..\src\ripple\resource\impl\Consumer.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClInclude Include="..\..\src\ripple\algorithm\api\DecayingSample.h">
-    </ClInclude>
     <ClCompile Include="..\..\src\ripple\resource\impl\Charge.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
@@ -2726,17 +2726,17 @@
     </ClInclude>
     <ClInclude Include="..\..\src\protobuf\src\google\protobuf\stubs\template_util.h">
     </ClInclude>
+    <ClCompile Include="..\..\src\ripple\unity\ripple.proto.cpp">
+    </ClCompile>
     <ClCompile Include="..\..\build\proto\ripple.pb.cc">
       <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\unity\ripple.proto.cpp">
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\radmap\impl\BasicFullBelowCache.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\unity\resource.cpp">
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple\unity\radmap.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\unity\resource.cpp">
     </ClCompile>
     <ClInclude Include="..\..\src\ripple\resource\impl\Key.h">
     </ClInclude>
@@ -2777,23 +2777,11 @@
     <ClCompile Include="..\..\src\ripple\module\rpc\handlers\AccountTx.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\rpc\impl\ParseAccountIds.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\rpc\impl\Manager.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\rpc\impl\RPCHandler.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\rpc\impl\RPCServerHandler.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
+    <ClInclude Include="..\..\src\ripple\module\rpc\impl\LegacyPathFind.h">
+    </ClInclude>
     <ClCompile Include="..\..\src\ripple\module\rpc\impl\TransactionSign.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClInclude Include="..\..\src\ripple\module\rpc\impl\LegacyPathFind.h">
-    </ClInclude>
     <ClInclude Include="..\..\src\ripple\module\rpc\impl\Handler.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\module\rpc\Tuning.h">
@@ -2801,26 +2789,6 @@
     <ClInclude Include="..\..\src\ripple\module\rpc\impl\DoPrint.h">
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\unity\sitefiles.cpp">
-    </ClCompile>
-    <ClInclude Include="..\..\src\ripple\unity\testoverlay.h">
-    </ClInclude>
-    <ClCompile Include="..\..\src\ripple\module\rpc\impl\LegacyPathFind.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\rpc\handlers\BlackList.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\rpc\impl\ErrorCodes.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\rpc\impl\Accounts.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\rpc\impl\LookupLedger.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\rpc\handlers\AccountTxSwitch.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\rpc\handlers\WalletAccounts.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
@@ -2831,7 +2799,31 @@
     <ClCompile Include="..\..\src\ripple\module\rpc\handlers\WalletSeed.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\rpc\impl\ErrorCodes.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\rpc\impl\RPCHandler.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\rpc\handlers\BlackList.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\rpc\impl\RPCServerHandler.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\rpc\impl\Handler.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\rpc\impl\LookupLedger.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\rpc\handlers\AccountTxSwitch.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\rpc\impl\AccountFromString.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\rpc\impl\Accounts.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\rpc\impl\Authorize.cpp">
@@ -2840,7 +2832,13 @@
     <ClCompile Include="..\..\src\ripple\module\rpc\impl\GetMasterGenerator.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\rpc\impl\Handler.cpp">
+    <ClCompile Include="..\..\src\ripple\module\rpc\impl\LegacyPathFind.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\rpc\impl\Manager.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\rpc\impl\ParseAccountIds.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\ripple\module\rpc\handlers\BookOffers.cpp">
@@ -2995,6 +2993,8 @@
     <ClCompile Include="..\..\src\ripple\sitefiles\impl\Manager.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\src\ripple\unity\testoverlay.cpp">
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple\sslutil\impl\CBigNum.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
@@ -3011,19 +3011,17 @@
     <ClCompile Include="..\..\src\ripple\testoverlay\impl\TestOverlay.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\ripple\unity\testoverlay.cpp">
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\types\impl\Base58.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\types\impl\Issue.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
+    <ClInclude Include="..\..\src\ripple\testoverlay\api\InitPolicy.h">
+    </ClInclude>
     <ClCompile Include="..\..\src\ripple\sslutil\impl\ECDSACanonical.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClInclude Include="..\..\src\ripple\testoverlay\api\InitPolicy.h">
-    </ClInclude>
+    <ClCompile Include="..\..\src\ripple\types\impl\RippleIdentifierTests.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\types\impl\RandomNumbers.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple\sslutil\impl\DHUtil.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
@@ -3032,28 +3030,33 @@
     </ClCompile>
     <ClInclude Include="..\..\src\ripple\testoverlay\api\MessageType.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple\testoverlay\api\ConfigType.h">
+    <ClInclude Include="..\..\src\ripple\unity\testoverlay.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple\testoverlay\api\PeerType.h">
-    </ClInclude>
-    <ClCompile Include="..\..\src\ripple\types\impl\RippleIdentifierTests.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClInclude Include="..\..\src\ripple\testoverlay\api\ConnectionType.h">
-    </ClInclude>
-    <ClCompile Include="..\..\src\ripple\types\impl\RandomNumbers.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
     <ClInclude Include="..\..\src\ripple\testoverlay\api\PeerLogicBase.h">
     </ClInclude>
-    <ClInclude Include="..\..\src\ripple\testoverlay\api\NetworkType.h">
-    </ClInclude>
-    <ClCompile Include="..\..\src\ripple\common\tests\cross_offer.test.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\src\ripple\types\impl\ByteOrder.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
+    <ClInclude Include="..\..\src\ripple\testoverlay\api\ConfigType.h">
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple\testoverlay\api\NetworkType.h">
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple\testoverlay\api\ConnectionType.h">
+    </ClInclude>
+    <ClCompile Include="..\..\src\ripple\types\impl\Base58.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\websocket\autosocket\AutoSocket.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\types\impl\Issue.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\common\tests\cross_offer.test.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClInclude Include="..\..\src\ripple\testoverlay\api\PeerType.h">
+    </ClInclude>
     <ClInclude Include="..\..\src\ripple\testoverlay\api\Results.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\testoverlay\api\SimplePayload.h">
@@ -3061,18 +3064,6 @@
     <ClInclude Include="..\..\src\ripple\testoverlay\api\StateBase.h">
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\unity\types.cpp">
-    </ClCompile>
-    <ClCompile Include="..\..\src\ripple\module\websocket\autosocket\LogWebsockets.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\websocket\src\messages\data.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\websocket\src\base64\base64.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\websocket\src\md5\md5.c">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\websocket\src\network_utilities.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
@@ -3090,9 +3081,6 @@
     </ClCompile>
     <ClInclude Include="..\..\src\ripple\validators\impl\SourceStrings.h">
     </ClInclude>
-    <ClCompile Include="..\..\src\ripple\module\websocket\autosocket\AutoSocket.cpp">
-      <ExcludedFromBuild>True</ExcludedFromBuild>
-    </ClCompile>
     <ClInclude Include="..\..\src\ripple\validators\impl\SourceURL.h">
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\validators\impl\Store.h">
@@ -3116,7 +3104,19 @@
     </ClInclude>
     <ClInclude Include="..\..\src\ripple\validators\impl\Validator.h">
     </ClInclude>
+    <ClCompile Include="..\..\src\websocket\src\md5\md5.c">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\src\ripple\unity\websocket.cpp">
+    </ClCompile>
+    <ClCompile Include="..\..\src\websocket\src\messages\data.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\websocket\src\base64\base64.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ripple\module\websocket\autosocket\LogWebsockets.cpp">
+      <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\websocket\src\uri.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
@@ -3148,9 +3148,9 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='debug|x64'">..\..\src\leveldb;..\..\src\leveldb\include;..\..\src\snappy\config;..\..\src\snappy\snappy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='release|x64'">..\..\src\leveldb;..\..\src\leveldb\include;..\..\src\snappy\config;..\..\src\snappy\snappy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
-    <ClInclude Include="..\..\src\ripple\nodestore\backend\NullFactory.h">
-    </ClInclude>
     <ClInclude Include="..\..\src\ripple\nodestore\backend\MemoryFactory.h">
+    </ClInclude>
+    <ClInclude Include="..\..\src\ripple\nodestore\backend\NullFactory.h">
     </ClInclude>
     <ClCompile Include="..\..\src\ripple\nodestore\backend\RocksDBFactory.cpp">
       <ExcludedFromBuild>True</ExcludedFromBuild>
@@ -3511,7 +3511,7 @@
     <ClCompile Include="..\..\src\hyperleveldb\db\builder.cc">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\hyperleveldb\db\log_writer.cc">
+    <ClCompile Include="..\..\src\hyperleveldb\db\log_reader.cc">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\hyperleveldb\db\dbformat.cc">
@@ -3523,10 +3523,10 @@
     <ClCompile Include="..\..\src\hyperleveldb\db\filename.cc">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\hyperleveldb\db\log_reader.cc">
+    <ClCompile Include="..\..\src\hyperleveldb\db\version_set.cc">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\src\hyperleveldb\db\version_set.cc">
+    <ClCompile Include="..\..\src\hyperleveldb\db\log_writer.cc">
       <ExcludedFromBuild>True</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\hyperleveldb\db\memtable.cc">
