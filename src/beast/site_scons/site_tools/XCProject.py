@@ -32,13 +32,14 @@ xcodeproj = xcode.xcodeproj_file
 
 
 def makeList(x):
-    if x:
-        if type(x) is list:
-            return x
-        else:
-            return [x]
-    else:
+    if not x:
         return []
+    elif type(x) is list:
+        return x
+    elif type(x) is tuple:
+        return list(x)
+    else:
+        return [x]
 
 
 # Main: ----------------------------------------------------------------------------
@@ -57,6 +58,7 @@ def buildProject(target_list, source, env):
         config = env["XCPROJECT_CONFIG"]
     except KeyError:
         raise ValueError ("Missing XCPROJECT_CONFIG")
+    target_list = makeList(target_list)
     target_dicts = {}
     for target in target_list:
         target_dicts[target] = {
