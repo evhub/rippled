@@ -109,7 +109,7 @@ def xsorted(tosort, **kwargs):
             return ("c", item.target, item.platform, item.variant)
         elif isinstance(item, Item):
             return ("i", item._path, item._builder)
-        elif isinstance(item, Scons.Node.FS.File):
+        elif isinstance(item, SCons.Node.FS.File):
             return ("f", item.name, item.suffix)
         else:
             return ("x", item)
