@@ -71,11 +71,15 @@ def buildProject(target_list, source, env):
             "sources": [source]
             }
         target_dicts[target].update(config)
+    build_file_dict = {
+        "xcode_settings": projectconfig()
+        }
+    build_file_dict.update(config)
     params = {
         "options": Options(config)
         }
     params.update(config)
-    xcode.GenerateOutput(target_list, target_dict, os.getcwd(), params)
+    xcode.GenerateOutput(target_list, target_dict, os.getcwd(), build_file_dict, params)
 
 
 def projectEmitter(target, source, env):
