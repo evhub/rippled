@@ -49,7 +49,7 @@ def buildProject(target, source, env):
     try:
         configs = xsorted(env["XCPROJECT_CONFIGS"], key=lambda x: x.name)
     except KeyError:
-        raise ValueError("Missing XCPROJECT_CONFIGS")
+        configs = []
     target_list = makeList(target)
     target_dicts = {}
     for target in target_list:
@@ -64,15 +64,16 @@ def buildProject(target, source, env):
             "type": "executable",
             "sources": [source]
             }
-        target_dicts[target].update(configs[target])
+        if target in configs:
+            target_dicts[target].update(configs[target])
     build_file_dict = {
         "xcode_settings": projectconfig()
         }
-    build_file_dict.update(XCMainConfig)
+    build_file_dict.update(XCGlobalConfig)
     params = {
         "options": Options(configs)
         }
-    params.update(XCMainConfig)
+    params.update(XCGlobalConfig)
     xcode.GenerateOutput(target_list, target_dict, os.getcwd(), build_file_dict, params)
 
 
@@ -103,7 +104,7 @@ def generate(env):
         env["BUILDERS"]["XCProject"]
     except KeyError:
         env["BUILDERS"]["XCProject"] = projectBuilder
-    env.AddMethod(XCMainConfig, "XCMainConfig")
+    env.AddMethod(XCGlobalConfig, "XCGlobalConfig")
 
 
 def exists(env):
@@ -113,7 +114,7 @@ def exists(env):
 # Config: ----------------------------------------------------------------------------
 
 
-XCMainConfig = {}
+XCGlobalConfig = {}
 
 
 class Options(object):
