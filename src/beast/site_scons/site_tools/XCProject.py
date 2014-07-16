@@ -45,22 +45,12 @@ def makeList(x):
 # Main: ----------------------------------------------------------------------------
 
 
-class Options(object):
-    suffix = ""
-    generator_output = ""
-    def __init__(self, configs):
-        self.configs = configs
-
-
-XCMainConfig = {}
-
-
-def buildProject(target_list, source, env):
+def buildProject(target, source, env):
     try:
         configs = xsorted(env["XCPROJECT_CONFIGS"], key=lambda x: x.name)
     except KeyError:
         raise ValueError("Missing XCPROJECT_CONFIGS")
-    target_list = makeList(target_list)
+    target_list = makeList(target)
     target_dicts = {}
     for target in target_list:
         target_dicts[target] = {
@@ -116,7 +106,21 @@ def generate(env):
     env.AddMethod(XCMainConfig, "XCMainConfig")
 
 
+def exists(env):
+    return True
+
+
 # Config: ----------------------------------------------------------------------------
+
+
+XCMainConfig = {}
+
+
+class Options(object):
+    suffix = ""
+    generator_output = ""
+    def __init__(self, configs):
+        self.configs = configs
 
 
 def targetconfig(debug=False):
