@@ -25,7 +25,7 @@
     msvc.release    MSVC release variant
 
     vcxproj         Generate Visual Studio 2013 project file
-    pbxproj			Generate XCode project file
+    pbxproj         Generate XCode project file
 
 If the clang toolchain is detected, then the default target will use it, else
 the gcc toolchain will be used. On Windows environments, the MSVC toolchain is

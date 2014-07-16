@@ -48,13 +48,18 @@ def makeList(x):
 class Options(object):
     suffix = ""
     generator_output = ""
-    def __init__(self, config):
-        for k,v in config.items():
-            setattr(self, k, v)
+    def __init__(self, configs):
+        self.configs = configs
+
+
+XCMainConfig = {}
 
 
 def buildProject(target_list, source, env):
-    config = env.copy()
+    try:
+        configs = xsorted(env["XCPROJECT_CONFIGS"], key=lambda x: x.name)
+    except KeyError:
+        raise ValueError("Missing XCPROJECT_CONFIGS")
     target_list = makeList(target_list)
     target_dicts = {}
     for target in target_list:
@@ -69,15 +74,15 @@ def buildProject(target_list, source, env):
             "type": "executable",
             "sources": [source]
             }
-        target_dicts[target].update(config)
+        target_dicts[target].update(configs[target])
     build_file_dict = {
         "xcode_settings": projectconfig()
         }
-    build_file_dict.update(config)
+    build_file_dict.update(XCMainConfig)
     params = {
-        "options": Options(config)
+        "options": Options(configs)
         }
-    params.update(config)
+    params.update(XCMainConfig)
     xcode.GenerateOutput(target_list, target_dict, os.getcwd(), build_file_dict, params)
 
 
@@ -101,6 +106,14 @@ def projectEmitter(target, source, env):
 projectBuilder = SCons.Builder.Builder(
     action = SCons.Action.Action(buildProject, "Building ${TARGET}"),
     emitter = projectEmitter)
+
+
+def generate(env):
+    try:
+        env["BUILDERS"]["XCProject"]
+    except KeyError:
+        env["BUILDERS"]["XCProject"] = projectBuilder
+    env.AddMethod(XCMainConfig, "XCMainConfig")
 
 
 # Config: ----------------------------------------------------------------------------
