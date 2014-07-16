@@ -25,6 +25,7 @@
     msvc.release    MSVC release variant
 
     vcxproj         Generate Visual Studio 2013 project file
+    pbxproj			Generate XCode project file
 
 If the clang toolchain is detected, then the default target will use it, else
 the gcc toolchain will be used. On Windows environments, the MSVC toolchain is
@@ -443,7 +444,7 @@ root_dir = Dir('#').srcnode().get_abspath() # Path to this SConstruct file
 build_dir = os.path.join('build')
 base = Environment(
     toolpath=[os.path.join ('src', 'beast', 'site_scons', 'site_tools')],
-    tools=['default', 'Protoc', 'VSProject'],
+    tools=['default', 'Protoc', 'VSProject', 'XCProject'],
     ENV=os.environ,
     TARGET_ARCH='x86_64')
 import_environ(base)
@@ -603,3 +604,8 @@ vcxproj = base.VSProject(
     VSPROJECT_ROOT_DIRS = ['src/beast', 'src', '.'],
     VSPROJECT_CONFIGS = msvc_configs)
 base.Alias('vcxproj', vcxproj)
+
+pbxproj = base.XCProject(
+    os.path.join('Builds', 'XCode', 'RippleD'),
+    source = [])
+base.Alias('pbxproj', pbxproj)

@@ -54,10 +54,7 @@ class Options(object):
 
 
 def buildProject(target_list, source, env):
-    try:
-        config = env["XCPROJECT_CONFIG"]
-    except KeyError:
-        raise ValueError ("Missing XCPROJECT_CONFIG")
+    config = env.copy()
     target_list = makeList(target_list)
     target_dicts = {}
     for target in target_list:
