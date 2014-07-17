@@ -47,7 +47,7 @@ def makeList(x):
 
 def buildProject(target, source, env):
     try:
-        configs = xsorted(env["XCPROJECT_CONFIGS"], key=lambda x: x.name)
+        configs = xsorted(env["XCPROJECT_CONFIGS"])
     except KeyError:
         configs = []
     target_list = map(lambda x: x.name, makeList(target))
@@ -57,24 +57,77 @@ def buildProject(target, source, env):
             "toolset": "target",
             "default_configuration": "Default",
             "configurations": {
-                "Default": targetconfig(),
-                "Debug": targetconfig(True),
-                "Release": targetconfig(False)
+                "Default": Configuration(),
+                "Release": Configuration(False),
+                "Debug": Configuration(True)
                 },
             "type": "executable",
-            "sources": source
+            "sources": source,
+            "mac_xctest_bundle": 0,
+            "mac_bundle": 0,
+            "product_name": None,
+            "product_dir": None,
+            "product_prefix": None,
+            "product_extension": None,
+            "actions": [
+# What a properly formatted action should look like:
+##                { "message": None,
+##                  "action": ["scons"],
+##                  "process_outputs_as_sources": False,
+##                  "process_outputs_as_mac_bundle_resources": False,
+##                  "outputs": []
+##                  }
+                ],
+            "rules": [
+# What a properly formatted rule should look like:
+##                { "extension": "scons",
+##                  "rule_sources": [],
+##                  "outputs": [],
+##                  "process_outputs_as_sources": False,
+##                  "process_outputs_as_mac_bundle_resources": False,
+##                  "message": None,
+##                  "action": "scons",
+##                  "rule_name": "scons",
+##                  "inputs": []
+##                  }
+                ],
+            "mac_bundle_resources": [],
+            "mac_framework_private_headers": [],
+            "mac_framework_headers": [],
+            "copies": [
+# What a properly formatted copy should look like:
+##                { "destination": "/",
+##                  "files": []
+##                  }
+                ],
+            "postbuilds": [
+# What a properly formatted postbuild should look like:
+##                { "action": "scons"
+##                  "postbuild_name": "scons"
+##                  }
+                ],
+            "dependencies": [],
+            "libraries": []
             }
         if target in configs:
             target_dict[target].update(configs[target])
     build_file_dict = {
-        "xcode_settings": projectconfig(),
-        "included_files": {}
+        "xcode_settings": {},
+        "configurations": {},
+        "included_files": [],
+        "targets": target_list
         }
-    build_file_dict.update(XCGlobalConfig)
     params = {
-        "options": Options(configs)
+        "options": Options(configs),
+        "generator_flags": {
+            "xcode_parallel_builds": True,
+            "xcode_serialize_all_test_runs": True,
+            "xcode_project_version": None,
+            "xcode_list_excluded_files": True,
+            "standalone": None,
+            "support_target_suffix": " Support"
+            }
         }
-    params.update(XCGlobalConfig)
     xcode.GenerateOutput(target_list, target_dict, os.path.join(os.getcwd(), "Builds", "XCode", "rippled"), build_file_dict, params)
 
 
@@ -105,7 +158,6 @@ def generate(env):
         env["BUILDERS"]["XCProject"]
     except KeyError:
         env["BUILDERS"]["XCProject"] = projectBuilder
-    env.AddMethod(XCGlobalConfig, "XCGlobalConfig")
 
 
 def exists(env):
@@ -115,17 +167,29 @@ def exists(env):
 # Config: ----------------------------------------------------------------------------
 
 
-XCGlobalConfig = {}
-
-
 class Options(object):
     suffix = ""
     generator_output = ""
     def __init__(self, configs):
-        self.configs = configs
+        pass
 
 
-def targetconfig(debug=False):
+def Configuration(defines=None,
+                  include_dirs=None,
+                  library_dirs=None,
+                  mac_framework_dirs=None,
+                  debug=None):
+    """Wraps targetconfig."""
+    return {
+        "mac_framework_dirs": mac_framework_dirs or [],
+        "include_dirs": include_dirs or [],
+        "library_dirs": library_dirs or [],
+        "defines": defines or [],
+        "xcode_settings": targetconfig(debug=debug)
+        }
+
+
+def targetconfig(debug=None):
     """Assembles The Default Configuration For A Target."""     # This function only implements version 46
     out = {
         "PRODUCT_NAME" : "$(TARGET_NAME)",
@@ -140,7 +204,7 @@ def targetconfig(debug=False):
             })
 
 
-def projectconfig(debug=False):
+def projectconfig(debug=None):
     """Assembles The Default Configuration For A Project."""    # This function only implements version 46
     out = {
         "ALWAYS_SEARCH_USER_PATHS" : "NO",
