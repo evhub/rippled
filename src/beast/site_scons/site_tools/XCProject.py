@@ -51,9 +51,9 @@ def buildProject(target, source, env):
     except KeyError:
         configs = []
     target_list = makeList(target)
-    target_dicts = {}
+    target_dict = {}
     for target in target_list:
-        target_dicts[target] = {
+        target_dict[target] = {
             "toolset": "target",
             "default_configuration": "Default",
             "configurations": {
@@ -65,7 +65,7 @@ def buildProject(target, source, env):
             "sources": [source]
             }
         if target in configs:
-            target_dicts[target].update(configs[target])
+            target_dict[target].update(configs[target])
     build_file_dict = {
         "xcode_settings": projectconfig()
         }
