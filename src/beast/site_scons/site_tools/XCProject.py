@@ -102,7 +102,7 @@ def buildProject(target, source, env):
                 ],
             "postbuilds": [
 # What a properly formatted postbuild should look like:
-##                { "action": "scons"
+##                { "action": "scons",
 ##                  "postbuild_name": "scons"
 ##                  }
                 ],
