@@ -57,9 +57,9 @@ def buildProject(target, source, env):
             "toolset": "target",
             "default_configuration": "Default",
             "configurations": {
-                "Default": Configuration(),
-                "Release": Configuration(False),
-                "Debug": Configuration(True)
+                "Default": targetConfiguration(),
+                "Release": targetConfiguration(debug=False),
+                "Debug": targetConfiguration(debug=True)
                 },
             "type": "executable",
             "sources": source,
@@ -112,8 +112,12 @@ def buildProject(target, source, env):
         if target in configs:
             target_dict[target].update(configs[target])
     build_file_dict = {
-        "xcode_settings": {},
-        "configurations": {},
+        "xcode_settings": projectconfig(),
+        "configurations": {
+            "Default": projectConfiguration(),
+            "Debug": projectConfiguration(debug=True),
+            "Release": projectConfiguration(debug=False)
+            },
         "included_files": [],
         "targets": target_list
         }
@@ -174,11 +178,11 @@ class Options(object):
         pass
 
 
-def Configuration(defines=None,
-                  include_dirs=None,
-                  library_dirs=None,
-                  mac_framework_dirs=None,
-                  debug=None):
+def targetConfiguration(defines=None,
+                        include_dirs=None,
+                        library_dirs=None,
+                        mac_framework_dirs=None,
+                        debug=None):
     """Wraps targetconfig."""
     return {
         "mac_framework_dirs": mac_framework_dirs or [],
@@ -202,6 +206,14 @@ def targetconfig(debug=None):
             "GCC_GENERATE_DEBUGGING_SYMBOLS" : "YES",
             "GCC_OPTIMIZATION_LEVEL" : 0
             })
+
+
+class projectConfiguration(debug=None):
+    """Wraps projectconfig."""
+    return {
+        "xcode_settings": projectconfig(debug=debug)
+        }
+    
 
 
 def projectconfig(debug=None):
