@@ -215,7 +215,6 @@ def projectConfiguration(debug=None):
         }
     
 
-
 def projectconfig(debug=None):
     """Assembles The Default Configuration For A Project."""    # This function only implements version 46
     out = {
