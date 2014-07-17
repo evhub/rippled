@@ -208,7 +208,7 @@ def targetconfig(debug=None):
             })
 
 
-class projectConfiguration(debug=None):
+def projectConfiguration(debug=None):
     """Wraps projectconfig."""
     return {
         "xcode_settings": projectconfig(debug=debug)
