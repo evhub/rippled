@@ -86,7 +86,7 @@ def projectEmitter(target, source, env):
         source = []
 
     outputs = []
-    for node in list(target):
+    for node in makeList(target):
         path = env.GetBuildPath(node)
         outputs.extend([
             path + '.pbxproj'
