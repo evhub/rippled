@@ -132,7 +132,7 @@ def targetconfig(debug=False):
         "OTHER_LDFLAGS" : ""
         }
     if debug:
-        out.extend({
+        out.update({
             "DEBUGGING_SYMBOLS" : "YES",
             "GCC_GENERATE_DEBUGGING_SYMBOLS" : "YES",
             "GCC_OPTIMIZATION_LEVEL" : 0
@@ -168,7 +168,7 @@ def projectconfig(debug=False):
         "SDKROOT" : "macosx"
         }
     if debug:
-        out.extend({
+        out.update({
             "GCC_SYMBOLS_PRIVATE_EXTERN" : "NO",
             "GCC_DYNAMIC_NO_PIC" : "NO",
             "GCC_OPTIMIZATION_LEVEL" : 0,
@@ -179,7 +179,7 @@ def projectconfig(debug=False):
             "ONLY_ACTIVE_ARCH" : "YES"
             })
     else:
-        out.extend({
+        out.update({
             "DEBUG_INFORMATION_FORMAT" : "dwarf-with-dsym",
             "ENABLE_NS_ASSERTIONS" : "NO"
             })
