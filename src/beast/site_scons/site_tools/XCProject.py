@@ -12,7 +12,7 @@ Necessary for working with .xcodeproj files.
 # Imports: -------------------------------------------------------------------------
 
 
-from __future__ import with_statement
+from __future__ import with_statement, print_function
 
 import os
 
@@ -50,7 +50,7 @@ def buildProject(target, source, env):
         configs = xsorted(env["XCPROJECT_CONFIGS"], key=lambda x: x.name)
     except KeyError:
         configs = []
-    target_list = makeList(target)
+    target_list = map(lambda x: x.name, makeList(target))
     target_dict = {}
     for target in target_list:
         target_dict[target] = {
@@ -62,19 +62,20 @@ def buildProject(target, source, env):
                 "Release": targetconfig(False)
                 },
             "type": "executable",
-            "sources": [source]
+            "sources": source
             }
         if target in configs:
             target_dict[target].update(configs[target])
     build_file_dict = {
-        "xcode_settings": projectconfig()
+        "xcode_settings": projectconfig(),
+        "included_files": {}
         }
     build_file_dict.update(XCGlobalConfig)
     params = {
         "options": Options(configs)
         }
     params.update(XCGlobalConfig)
-    xcode.GenerateOutput(target_list, target_dict, os.getcwd(), build_file_dict, params)
+    xcode.GenerateOutput(target_list, target_dict, os.path.join(os.getcwd(), "Builds", "XCode", "rippled"), build_file_dict, params)
 
 
 def projectEmitter(target, source, env):
