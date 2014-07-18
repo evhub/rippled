@@ -206,6 +206,7 @@ def targetconfig(debug=None):
             "GCC_GENERATE_DEBUGGING_SYMBOLS" : "YES",
             "GCC_OPTIMIZATION_LEVEL" : 0
             })
+    return out
 
 
 def projectConfiguration(debug=None):
@@ -259,3 +260,4 @@ def projectconfig(debug=None):
             "DEBUG_INFORMATION_FORMAT" : "dwarf-with-dsym",
             "ENABLE_NS_ASSERTIONS" : "NO"
             })
+    return out
