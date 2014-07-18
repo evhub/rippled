@@ -111,6 +111,14 @@ def buildProject(target, source, env):
             }
         if target in configs:
             target_dict[target].update(configs[target])
+    target_dict_list = []
+    for target in target_list:
+        target_dict_list.append({
+            "target_name": target,
+            "toolset": None,
+            "suppress_wildcard": False,
+            "run_as": None
+            })
     build_file_dict = {
         "xcode_settings": projectconfig(),
         "configurations": {
@@ -119,7 +127,7 @@ def buildProject(target, source, env):
             "Release": projectConfiguration(debug=False)
             },
         "included_files": [],
-        "targets": target_list
+        "targets": target_dict_list
         }
     params = {
         "options": Options(configs),
@@ -132,12 +140,12 @@ def buildProject(target, source, env):
             "support_target_suffix": " Support"
             }
         }
-    xcode.GenerateOutput(target_list, target_dict, os.path.join(os.getcwd(), "Builds", "XCode", "rippled"), build_file_dict, params)
+    xcode.GenerateOutput(target_list, target_dict, os.path.join(os.getcwd(), "Builds", "XCode", "RippleD"), build_file_dict, params)
 
 
 def projectEmitter(target, source, env):
     if len(target) != 1:
-        raise ValueError ("Exactly one target must be specified")
+        raise ValueError("Exactly one target must be specified")
 
     # If source is unspecified this condition will be true
     if not source or source[0] == target[0]:
@@ -145,10 +153,7 @@ def projectEmitter(target, source, env):
 
     outputs = []
     for node in makeList(target):
-        path = env.GetBuildPath(node)
-        outputs.extend([
-            path + '.pbxproj'
-            ])
+        outputs.append(env.GetBuildPath(node))
     return outputs, source
 
 
