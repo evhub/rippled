@@ -492,6 +492,7 @@ for source in [
 # Declare the targets
 aliases = collections.defaultdict(list)
 msvc_configs = []
+clang_configs = []
 for toolchain in all_toolchains:
     for variant in variants:
         # Configure this variant's construction environment
@@ -589,6 +590,9 @@ for toolchain in all_toolchains:
         if toolchain == 'msvc':
             config = env.VSProjectConfig(variant, 'x64', target, env)
             msvc_configs.append(config)
+        elif toolchain == 'clang':
+            config = env.XCProjectConfig(variant, target, env)
+            clang_configs.append(config)
         if toolchain in toolchains:
             aliases['all'].extend(target)
             aliases[variant].extend(target)
@@ -607,5 +611,6 @@ base.Alias('vcxproj', vcxproj)
 
 xcodeproj = base.XCProject(
     os.path.join('Builds', 'XCode', 'RippleD'),
-    source = [])
+    source = [],
+    XCPROJECT_CONFIGS = clang_configs)
 base.Alias('xcodeproj', xcodeproj)

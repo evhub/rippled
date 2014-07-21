@@ -46,11 +46,14 @@ def makeList(x):
 
 
 def buildProject(target, source, env):
+    if len(target) != 1:
+        raise ValueError("Unexpected len(target) != 1")
+    project_node = str(target[0])
     try:
         configs = xsorted(env["XCPROJECT_CONFIGS"])
     except KeyError:
         configs = []
-    target_list = map(lambda x: x.name, makeList(target))
+    target_list = configs.keys()
     target_dict = {}
     for target in target_list:
         target_dict[target] = {
@@ -62,7 +65,6 @@ def buildProject(target, source, env):
                 "Debug": targetConfiguration(debug=True)
                 },
             "type": "executable",
-            "sources": source,
             "mac_xctest_bundle": 0,
             "mac_bundle": 0,
             "product_name": None,
@@ -106,8 +108,7 @@ def buildProject(target, source, env):
 ##                  "postbuild_name": "scons"
 ##                  }
                 ],
-            "dependencies": [],
-            "libraries": []
+            "dependencies": []
             }
         if target in configs:
             target_dict[target].update(configs[target])
@@ -167,6 +168,7 @@ def generate(env):
         env["BUILDERS"]["XCProject"]
     except KeyError:
         env["BUILDERS"]["XCProject"] = projectBuilder
+    env.AddMethod(XCProjectConfig, "XCProjectConfig")
 
 
 def exists(env):
@@ -174,6 +176,41 @@ def exists(env):
 
 
 # Config: ----------------------------------------------------------------------------
+
+
+def XCProjectConfig(variant, targets, env):
+    items = []
+    def _walk(target):
+        if not os.path.isabs(str(target)) and target.has_builder():
+            builder = target.get_builder().get_name(env)
+            bsources = target.get_binfo().bsources
+            if builder == "Program":
+                for child in bsources:
+                    _walk(child)
+            else:
+                for child in bsources:
+                    items.append(str(child))
+                    _walk(child)
+                for child in target.children(scan=1):
+                    if not os.path.isabs(str(child)):
+                        items.append(str(child))
+                        _walk(child)
+    for target in targets:
+        _walk(target)
+    sources = []
+    libraries = []
+    for item in items:
+        ext = os.path.splitext(item)[1]
+        if ext in ['.c', '.cc', '.cpp']:
+            sources.append(item)
+        elif ext in ['.h', '.hpp', '.hxx', '.inl', '.inc']:
+            libraries.append(item)
+        else:
+            raise ValueError("Unkown extension "+ext)
+    return {
+        "sources": sources,
+        "libraries": libraries
+        }
 
 
 class Options(object):
