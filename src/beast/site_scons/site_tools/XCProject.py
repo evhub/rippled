@@ -47,13 +47,21 @@ def makeList(x):
 
 def buildProject(target, source, env):
     if len(target) != 1:
-        raise ValueError("Unexpected len(target) != 1")
+        raise ValueError("Exactly one target must be specified")
+
     project_node = str(target[0])
+
     try:
         configs = env["XCPROJECT_CONFIGS"]
     except KeyError:
         raise ValueError("Could not find XCPROJECT_CONFIGS")
+
+    XCProject(configs)
+
+
+def XCProject(configs):
     target_list = xsorted(configs.keys())
+
     target_dict = {}
     for target in target_list:
         target_dict[target] = {
@@ -111,6 +119,7 @@ def buildProject(target, source, env):
             }
         if target in configs:
             target_dict[target].update(configs[target])
+
     target_dict_list = []
     for target in target_list:
         target_dict_list.append({
@@ -129,6 +138,7 @@ def buildProject(target, source, env):
         "included_files": [],
         "targets": target_dict_list
         }
+
     params = {
         "options": Options(configs),
         "generator_flags": {
@@ -140,7 +150,8 @@ def buildProject(target, source, env):
             "support_target_suffix": " Support"
             }
         }
-    xcode.GenerateOutput(target_list, target_dict, os.path.join(os.getcwd(), "Builds", "XCode", "RippleD"), build_file_dict, params)
+
+    return xcode.GenerateOutput(target_list, target_dict, os.path.join(os.getcwd(), "Builds", "XCode", "RippleD"), build_file_dict, params)
 
 
 def projectEmitter(target, source, env):
