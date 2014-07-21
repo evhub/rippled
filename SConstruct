@@ -492,7 +492,7 @@ for source in [
 # Declare the targets
 aliases = collections.defaultdict(list)
 msvc_configs = []
-clang_configs = {}
+clang_configs = []
 for toolchain in all_toolchains:
     for variant in variants:
         # Configure this variant's construction environment
@@ -592,7 +592,7 @@ for toolchain in all_toolchains:
             msvc_configs.append(config)
         elif toolchain == 'clang':
             config = env.XCProjectConfig(variant, target, env)
-            clang_configs[str(target)] = config
+            clang_configs.append(config)
         if toolchain in toolchains:
             aliases['all'].extend(target)
             aliases[variant].extend(target)

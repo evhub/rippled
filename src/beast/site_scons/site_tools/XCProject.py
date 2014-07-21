@@ -42,7 +42,7 @@ def makeList(x):
         return [x]
 
 
-# Main: ----------------------------------------------------------------------------
+# SCons: ---------------------------------------------------------------------------
 
 
 def buildProject(target, source, env):
@@ -52,15 +52,50 @@ def buildProject(target, source, env):
     project_node = str(target[0])
 
     try:
-        configs = env["XCPROJECT_CONFIGS"]
+        configs = xsorted(env["XCPROJECT_CONFIGS"])
     except KeyError:
         raise ValueError("Could not find XCPROJECT_CONFIGS")
 
     XCProject(project_node, configs)
 
 
+def projectEmitter(target, source, env):
+    if len(target) != 1:
+        raise ValueError("Exactly one target must be specified")
+
+    # If source is unspecified this condition will be true
+    if not source or source[0] == target[0]:
+        source = []
+
+    outputs = []
+    for node in makeList(target):
+        outputs.append(env.GetBuildPath(node))
+    return outputs, source
+
+
+projectBuilder = SCons.Builder.Builder(
+    action = SCons.Action.Action(buildProject, "Building ${TARGET}"),
+    emitter = projectEmitter)
+
+
+def generate(env):
+    try:
+        env["BUILDERS"]["XCProject"]
+    except KeyError:
+        env["BUILDERS"]["XCProject"] = projectBuilder
+    env.AddMethod(XCProjectConfig, "XCProjectConfig")
+
+
+def exists(env):
+    return True
+
+
+# Main: ----------------------------------------------------------------------------
+
+
 def XCProject(project_node, configs):
-    target_list = xsorted(configs.keys())
+    target_configs = processConfigs(configs)
+    target_list = xsorted(target_configs.keys())
 
     target_dict = {}
     for target in target_list:
@@ -117,8 +152,8 @@ def XCProject(project_node, configs):
 ##                  }
                 ]
             }
-        if target in configs:
-            target_dict[target].update(configs[target])
+        if target in target_configs:
+            target_dict[target].update(target_configs[target])
 
     target_dict_list = []
     for target in target_list:
@@ -140,7 +175,7 @@ def XCProject(project_node, configs):
         }
 
     params = {
-        "options": Options(configs),
+        "options": Options(),
         "generator_flags": {
             "xcode_parallel_builds": True,
             "xcode_serialize_all_test_runs": True,
@@ -154,82 +189,69 @@ def XCProject(project_node, configs):
     return xcode.GenerateOutput(target_list, target_dict, project_node, build_file_dict, params)
 
 
-def projectEmitter(target, source, env):
-    if len(target) != 1:
-        raise ValueError("Exactly one target must be specified")
+def processConfigs(configs):
+    target_configs = {}
 
-    # If source is unspecified this condition will be true
-    if not source or source[0] == target[0]:
-        source = []
+    def _addTarget(target):
+        target = str(target)
+        if target not in target_configs:
+            target_configs[target] = {
+                "sources": [],
+                "libraries": [],
+                "dependencies": []
+                }
 
-    outputs = []
-    for node in makeList(target):
-        outputs.append(env.GetBuildPath(node))
-    return outputs, source
+    def _addItem(item, target):
+        item = str(item)
+        target = str(target)
+        ext = os.path.splitext(item)[1]
+        if ext in ['.c', '.cc', '.cpp']:
+            if item not in target_list[target]["sources"]:
+                target_list[target]["sources"].append(item)
+        elif item not in target_list[target]["libraries"]:
+            if ext not in ['.h', '.hpp', '.hxx', '.inl', '.inc']:
+                print("WARNING: Unknown file extension "+ext)
+            target_list[target]["libraries"].append(item)
 
+    def _walk(target, root=None):
+        if root and target in target_configs:
+            target_configs[root]["dependencies"].append(target)
+        else:
+            if root is None:
+                _addTarget(root)
+                root = target
+            if not os.path.isabs(str(target)) and target.has_builder():
+                builder = target.get_builder().get_name(env)
+                bsources = target.get_binfo().bsources
+                if builder == "Program":
+                    for child in bsources:
+                        _walk(child, root)
+                else:
+                    for child in bsources+target.children(scan=1):
+                        _addItem(child, root)
+                        _walk(child, root)
 
-projectBuilder = SCons.Builder.Builder(
-    action = SCons.Action.Action(buildProject, "Building ${TARGET}"),
-    emitter = projectEmitter)
+    for config in configs:
+        for target in config["targets"]:
+            _walk(target)
 
-
-def generate(env):
-    try:
-        env["BUILDERS"]["XCProject"]
-    except KeyError:
-        env["BUILDERS"]["XCProject"] = projectBuilder
-    env.AddMethod(XCProjectConfig, "XCProjectConfig")
-
-
-def exists(env):
-    return True
+    return target_configs
 
 
 # Config: ----------------------------------------------------------------------------
 
 
 def XCProjectConfig(self, variant, targets, env):
-    items = []
-    def _walk(target):
-        if not os.path.isabs(str(target)) and target.has_builder():
-            builder = target.get_builder().get_name(env)
-            bsources = target.get_binfo().bsources
-            if builder == "Program":
-                for child in bsources:
-                    _walk(child)
-            else:
-                for child in bsources:
-                    items.append(str(child))
-                    _walk(child)
-                for child in target.children(scan=1):
-                    if not os.path.isabs(str(child)):
-                        items.append(str(child))
-                        _walk(child)
-    for target in targets:
-        _walk(target)
-    sources = []
-    libraries = []
-    dependencies = []
-    for item in set(items):
-        ext = os.path.splitext(item)[1]
-        if ext in ['.c', '.cc', '.cpp']:
-            sources.append(item)
-        elif ext in ['.h', '.hpp', '.hxx', '.inl', '.inc']:
-            libraries.append(item)
-        else:
-            libraries.append(item)
     return {
-        "sources": sources,
-        "libraries": libraries,
-        "dependencies": []
+        "variant": variant,
+        "targets": targets,
+        "env": env
         }
 
 
 class Options(object):
     suffix = ""
     generator_output = ""
-    def __init__(self, configs):
-        pass
 
 
 def targetConfiguration(defines=None,
