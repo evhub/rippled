@@ -50,10 +50,10 @@ def buildProject(target, source, env):
         raise ValueError("Unexpected len(target) != 1")
     project_node = str(target[0])
     try:
-        configs = xsorted(env["XCPROJECT_CONFIGS"])
+        configs = env["XCPROJECT_CONFIGS"]
     except KeyError:
-        configs = []
-    target_list = configs.keys()
+        raise ValueError("Could not find XCPROJECT_CONFIGS")
+    target_list = xsorted(configs.keys())
     target_dict = {}
     for target in target_list:
         target_dict[target] = {
@@ -107,8 +107,7 @@ def buildProject(target, source, env):
 ##                { "action": "scons",
 ##                  "postbuild_name": "scons"
 ##                  }
-                ],
-            "dependencies": []
+                ]
             }
         if target in configs:
             target_dict[target].update(configs[target])
@@ -178,7 +177,7 @@ def exists(env):
 # Config: ----------------------------------------------------------------------------
 
 
-def XCProjectConfig(variant, targets, env):
+def XCProjectConfig(self, variant, targets, env):
     items = []
     def _walk(target):
         if not os.path.isabs(str(target)) and target.has_builder():
@@ -199,17 +198,19 @@ def XCProjectConfig(variant, targets, env):
         _walk(target)
     sources = []
     libraries = []
-    for item in items:
+    dependencies = []
+    for item in set(items):
         ext = os.path.splitext(item)[1]
         if ext in ['.c', '.cc', '.cpp']:
             sources.append(item)
         elif ext in ['.h', '.hpp', '.hxx', '.inl', '.inc']:
             libraries.append(item)
         else:
-            raise ValueError("Unkown extension "+ext)
+            libraries.append(item)
     return {
         "sources": sources,
-        "libraries": libraries
+        "libraries": libraries,
+        "dependencies": []
         }
 
 
