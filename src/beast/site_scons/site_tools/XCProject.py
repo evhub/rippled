@@ -25,7 +25,6 @@ import SCons.Script.Main
 import SCons.Util
 
 from gyp import xcode
-xcodeproj = xcode.xcodeproj_file
 
 
 # Utils: ---------------------------------------------------------------------------
@@ -52,7 +51,7 @@ def buildProject(target, source, env):
     project_node = str(target[0])
 
     try:
-        configs = xsorted(env["XCPROJECT_CONFIGS"])
+        configs = env["XCPROJECT_CONFIGS"]
     except KeyError:
         raise ValueError("Could not find XCPROJECT_CONFIGS")
 
@@ -94,7 +93,8 @@ def exists(env):
 
 
 def XCProject(project_node, configs):
-    target_configs = processConfigs(configs)
+    build_file = str(project_node)
+    target_configs = ConfigManager(build_file, configs).processConfigs()
     target_list = xsorted(target_configs.keys())
 
     target_dict = {}
@@ -157,8 +157,9 @@ def XCProject(project_node, configs):
 
     target_dict_list = []
     for target in target_list:
+        target_name = xcode.common.ParseQualifiedTarget(target)[1]
         target_dict_list.append({
-            "target_name": target,
+            "target_name": target_name,
             "toolset": None,
             "suppress_wildcard": False,
             "run_as": None
@@ -186,56 +187,63 @@ def XCProject(project_node, configs):
             }
         }
 
-    return xcode.GenerateOutput(target_list, target_dict, project_node, build_file_dict, params)
+    return xcode.GenerateOutput(target_list, target_dict, build_file, build_file_dict, params)
 
 
-def processConfigs(configs):
-    target_configs = {}
+class ConfigManager(object):
+    def __init__(self, build_file, configs):
+        self.build_file = build_file
+        self.configs = configs
 
-    def _addTarget(target):
-        target = str(target)
-        if target not in target_configs:
-            target_configs[target] = {
+    def processConfigs(self):
+        self.target_configs = {}
+        for config in self.configs:
+            self.env = config["env"]
+            for target in config["targets"]:
+                self.walk(target)
+        return self.target_configs
+
+    def formatTarget(self, target):
+        return xcode.common.QualifiedTarget(self.build_file, str(target), None)
+
+    def addTarget(self, target):
+        target = self.formatTarget(target)
+        if target not in self.target_configs:
+            self.target_configs[target] = {
                 "sources": [],
                 "libraries": [],
                 "dependencies": []
                 }
 
-    def _addItem(item, target):
+    def addItem(self, item, target):
         item = str(item)
-        target = str(target)
+        target = self.formatTarget(target)
         ext = os.path.splitext(item)[1]
         if ext in ['.c', '.cc', '.cpp']:
-            if item not in target_list[target]["sources"]:
-                target_list[target]["sources"].append(item)
-        elif item not in target_list[target]["libraries"]:
+            if item not in self.target_configs[target]["sources"]:
+                self.target_configs[target]["sources"].append(item)
+        elif item not in self.target_configs[target]["libraries"]:
             if ext not in ['.h', '.hpp', '.hxx', '.inl', '.inc']:
                 print("WARNING: Unknown file extension "+ext)
-            target_list[target]["libraries"].append(item)
+            self.target_configs[target]["libraries"].append(item)
 
-    def _walk(target, root=None):
-        if root and target in target_configs:
-            target_configs[root]["dependencies"].append(target)
+    def walk(self, target, root=None):
+        if root and target in self.target_configs:
+            self.target_configs[root]["dependencies"].append(target)
         else:
             if root is None:
-                _addTarget(root)
+                self.addTarget(target)
                 root = target
             if not os.path.isabs(str(target)) and target.has_builder():
-                builder = target.get_builder().get_name(env)
+                builder = target.get_builder().get_name(self.env)
                 bsources = target.get_binfo().bsources
                 if builder == "Program":
                     for child in bsources:
-                        _walk(child, root)
+                        self.walk(child, root)
                 else:
                     for child in bsources+target.children(scan=1):
-                        _addItem(child, root)
-                        _walk(child, root)
-
-    for config in configs:
-        for target in config["targets"]:
-            _walk(target)
-
-    return target_configs
+                        self.addItem(child, root)
+                        self.walk(child, root)
 
 
 # Config: ----------------------------------------------------------------------------
