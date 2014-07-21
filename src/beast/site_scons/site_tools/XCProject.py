@@ -56,10 +56,10 @@ def buildProject(target, source, env):
     except KeyError:
         raise ValueError("Could not find XCPROJECT_CONFIGS")
 
-    XCProject(configs)
+    XCProject(project_node, configs)
 
 
-def XCProject(configs):
+def XCProject(project_node, configs):
     target_list = xsorted(configs.keys())
 
     target_dict = {}
@@ -151,7 +151,7 @@ def XCProject(configs):
             }
         }
 
-    return xcode.GenerateOutput(target_list, target_dict, os.path.join(os.getcwd(), "Builds", "XCode", "RippleD"), build_file_dict, params)
+    return xcode.GenerateOutput(target_list, target_dict, project_node, build_file_dict, params)
 
 
 def projectEmitter(target, source, env):
