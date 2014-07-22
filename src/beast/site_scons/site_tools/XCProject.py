@@ -163,6 +163,7 @@ def XCProject(project_node, configs):
     for target in target_list:
         target_name = unQualifyTarget(target)
         target_dict_list.append({
+            "xcode_create_dependents_test_runner": 0,
             "target_name": target_name,
             "toolset": None,
             "suppress_wildcard": False,
@@ -186,7 +187,7 @@ def XCProject(project_node, configs):
             "xcode_serialize_all_test_runs": True,
             "xcode_project_version": None,
             "xcode_list_excluded_files": True,
-            "standalone": None,
+            "standalone": True,
             "support_target_suffix": " Support"
             }
         }
@@ -225,11 +226,8 @@ class ConfigManager(object):
         if item not in self.included_files:
             self.included_files.append(item)
             target = self.formatTarget(target)
-            ext = os.path.splitext(item)[1]
-            if ext in ['.c', '.cc', '.cpp'] and item not in self.target_configs[target]["sources"]:
+            if item not in self.target_configs[target]["sources"]:
                 self.target_configs[target]["sources"].append(item)
-            elif ext in ['.h', '.hpp', '.hxx', '.inl', '.inc'] and item not in self.target_configs[target]["libraries"]:
-                self.target_configs[target]["libraries"].append(item)
 
     def walk(self, target, root=None):
         if root and target in self.target_configs:

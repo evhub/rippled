@@ -2605,6 +2605,7 @@ class PBXProject(XCContainerPortal):
     if source_tree != None and source_tree in source_tree_groups:
       (group_func, hierarchical) = source_tree_groups[source_tree]
       group = group_func()
+      assert hierarchical is True, "All groups should be sorted hierarchically"
       return (group, hierarchical)
 
     # TODO(mark): make additional choices based on file extension.
