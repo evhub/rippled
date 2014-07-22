@@ -41,6 +41,10 @@ def makeList(x):
         return [x]
 
 
+def unQualifyTarget(target):
+    return xcode.common.ParseQualifiedTarget(target)[1]
+
+
 # SCons: ---------------------------------------------------------------------------
 
 
@@ -94,7 +98,7 @@ def exists(env):
 
 def XCProject(project_node, configs):
     build_file = str(project_node)
-    target_configs = ConfigManager(build_file, configs).processConfigs()
+    target_configs, included_files = ConfigManager(build_file, configs).processConfigs()
     target_list = xsorted(target_configs.keys())
 
     target_dict = {}
@@ -157,7 +161,7 @@ def XCProject(project_node, configs):
 
     target_dict_list = []
     for target in target_list:
-        target_name = xcode.common.ParseQualifiedTarget(target)[1]
+        target_name = unQualifyTarget(target)
         target_dict_list.append({
             "target_name": target_name,
             "toolset": None,
@@ -171,7 +175,7 @@ def XCProject(project_node, configs):
             "Debug": projectConfiguration(debug=True),
             "Release": projectConfiguration(debug=False)
             },
-        "included_files": [],
+        "included_files": included_files,
         "targets": target_dict_list
         }
 
@@ -197,11 +201,12 @@ class ConfigManager(object):
 
     def processConfigs(self):
         self.target_configs = {}
+        self.included_files = []
         for config in self.configs:
             self.env = config["env"]
             for target in config["targets"]:
                 self.walk(target)
-        return self.target_configs
+        return self.target_configs, self.included_files
 
     def formatTarget(self, target):
         return xcode.common.QualifiedTarget(self.build_file, str(target), None)
@@ -217,15 +222,14 @@ class ConfigManager(object):
 
     def addItem(self, item, target):
         item = str(item)
-        target = self.formatTarget(target)
-        ext = os.path.splitext(item)[1]
-        if ext in ['.c', '.cc', '.cpp']:
-            if item not in self.target_configs[target]["sources"]:
+        if item not in self.included_files:
+            self.included_files.append(item)
+            target = self.formatTarget(target)
+            ext = os.path.splitext(item)[1]
+            if ext in ['.c', '.cc', '.cpp'] and item not in self.target_configs[target]["sources"]:
                 self.target_configs[target]["sources"].append(item)
-        elif item not in self.target_configs[target]["libraries"]:
-            if ext not in ['.h', '.hpp', '.hxx', '.inl', '.inc']:
-                print("WARNING: Unknown file extension "+ext)
-            self.target_configs[target]["libraries"].append(item)
+            elif ext in ['.h', '.hpp', '.hxx', '.inl', '.inc'] and item not in self.target_configs[target]["libraries"]:
+                self.target_configs[target]["libraries"].append(item)
 
     def walk(self, target, root=None):
         if root and target in self.target_configs:
@@ -237,11 +241,12 @@ class ConfigManager(object):
             if not os.path.isabs(str(target)) and target.has_builder():
                 builder = target.get_builder().get_name(self.env)
                 bsources = target.get_binfo().bsources
-                if builder == "Program":
-                    for child in bsources:
-                        self.walk(child, root)
-                else:
-                    for child in bsources+target.children(scan=1):
+                for child in bsources:
+                    if builder != "Program":
+                        self.addItem(child, root)
+                    self.walk(child, root)
+                if builder != "Program":
+                    for child in target.children(scan=1):
                         self.addItem(child, root)
                         self.walk(child, root)
 
