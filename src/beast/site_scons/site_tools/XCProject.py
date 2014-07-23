@@ -98,7 +98,7 @@ def exists(env):
 
 def XCProject(project_node, configs):
     build_file = str(project_node)
-    target_configs, included_files = ConfigManager(build_file, configs).processConfigs()
+    target_configs = ConfigManager(build_file, configs).processConfigs()
     target_list = xsorted(target_configs.keys())
 
     target_dict = {}
@@ -176,7 +176,7 @@ def XCProject(project_node, configs):
             "Debug": projectConfiguration(debug=True),
             "Release": projectConfiguration(debug=False)
             },
-        "included_files": included_files,
+        "included_files": [],
         "targets": target_dict_list
         }
 
@@ -205,12 +205,21 @@ class ConfigManager(object):
 
     def processConfigs(self):
         self.target_configs = {}
-        self.included_files = []
+        release = None
         for config in self.configs:
-            self.env = config["env"]
-            for target in config["targets"]:
-                self.walk(target)
-        return self.target_configs, self.included_files
+            self.printdebug("Config: "+str(config))
+            if config["variant"] == "debug":
+                debug = config
+            elif config["variant"] == "release":
+                release = config
+            else:
+                raise ValueError("Unkown variant "+str(config["variant"]))
+            self.env = debug["env"]
+            self.walk(debug["target"])
+            if release is not None:
+                self.env = release["env"]
+                self.walk(self.addTarget(debug["target"]), self.addTarget(release["target"]))
+        return self.target_configs
 
     def formatTarget(self, target):
         return xcode.common.QualifiedTarget(self.build_file, str(target), None)
@@ -223,19 +232,13 @@ class ConfigManager(object):
                 "libraries": [],
                 "dependencies": []
                 }
+        return target
 
     def addItem(self, item, target):
         item = str(item)
-        if item in self.included_files:
-            self.printdebug("| Duplicate")
-        else:
-            self.included_files.append(item)
-            target = self.formatTarget(target)
-            if item not in self.target_configs[target]["sources"]:
-                self.target_configs[target]["sources"].append(item)
-
-    def addDir(self, dirname, target):
-        self.addItem(dirname, target)
+        target = str(target)
+        if item not in self.target_configs[target]["sources"]:
+            self.target_configs[target]["sources"].append(item)
 
     def walk(self, target, root=None):
         self.recursion += 1
@@ -244,9 +247,8 @@ class ConfigManager(object):
             self.target_configs[root]["dependencies"].append(target)
         else:
             if root is None:
-                self.addTarget(target)
                 self.printdebug("Root: "+str(target))
-                root = target
+                root = self.addTarget(target)
             else:
                 self.printdebug("Target: "+str(target))
             self.recursion += 1
@@ -280,9 +282,11 @@ class ConfigManager(object):
 
 
 def XCProjectConfig(self, variant, targets, env):
+    if len(targets) != 1:
+        raise ValueError("Exactly one target must be specified")
     return {
-        "variant": variant,
-        "targets": targets,
+        "variant": str(variant),
+        "target": targets[0],
         "env": env
         }
 
