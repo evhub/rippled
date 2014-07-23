@@ -196,6 +196,9 @@ def XCProject(project_node, configs):
 
 
 class ConfigManager(object):
+    debug = False
+    recursion = 0
+
     def __init__(self, build_file, configs):
         self.build_file = build_file
         self.configs = configs
@@ -223,30 +226,54 @@ class ConfigManager(object):
 
     def addItem(self, item, target):
         item = str(item)
-        if item not in self.included_files:
+        if item in self.included_files:
+            self.printdebug("| Duplicate")
+        else:
             self.included_files.append(item)
             target = self.formatTarget(target)
             if item not in self.target_configs[target]["sources"]:
                 self.target_configs[target]["sources"].append(item)
 
+    def addDir(self, dirname, target):
+        self.addItem(dirname, target)
+
     def walk(self, target, root=None):
+        self.recursion += 1
         if root and target in self.target_configs:
+            self.printdebug("Dependency: "+str(target))
             self.target_configs[root]["dependencies"].append(target)
         else:
             if root is None:
                 self.addTarget(target)
+                self.printdebug("Root: "+str(target))
                 root = target
+            else:
+                self.printdebug("Target: "+str(target))
+            self.recursion += 1
             if not os.path.isabs(str(target)) and target.has_builder():
                 builder = target.get_builder().get_name(self.env)
+                self.printdebug("Builder: "+str(builder))
                 bsources = target.get_binfo().bsources
+                self.printdebug("Sources:")
+                self.recursion += 1
                 for child in bsources:
-                    if builder != "Program":
-                        self.addItem(child, root)
+                    self.printdebug("Source: "+str(child))
+                    self.addItem(child, root)
                     self.walk(child, root)
-                if builder != "Program":
-                    for child in target.children(scan=1):
-                        self.addItem(child, root)
-                        self.walk(child, root)
+                self.recursion -= 1
+                self.printdebug("Children:")
+                self.recursion += 1
+                for child in target.children(scan=1):
+                    self.printdebug("Child: "+str(child))
+                    self.addItem(child, root)
+                    self.walk(child, root)
+                self.recursion -= 1
+            self.recursion -= 1
+        self.recursion -= 1
+
+    def printdebug(self, output):
+        if self.debug:
+            print("  "*self.recursion+str(output))
 
 
 # Config: ----------------------------------------------------------------------------
