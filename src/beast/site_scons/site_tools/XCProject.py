@@ -96,8 +96,11 @@ def exists(env):
 
 
 def XCProject(project_node, configs):
-    build_file = os.path.relpath(str(project_node))
-    target_configs, included_files = ConfigManager(build_file, configs).processConfigs()
+    project_node = str(project_node)
+    build_file_head, build_file_tail = os.path.split(project_node)
+    build_file = os.path.join(build_file_head, os.path.relpath(os.path.abspath(os.path.join(build_file_head, build_file_tail)), build_file_head))
+
+    target_configs, included_files = ConfigManager(build_file, build_file_head, configs).processConfigs()
     target_list = xsorted(target_configs.keys())
 
     target_dict = {}
@@ -188,12 +191,14 @@ def XCProject(project_node, configs):
 
 
 class ConfigManager(object):
-    debug = False
+    debug = True
     recursion = 0
 
-    def __init__(self, build_file, configs):
+    def __init__(self, build_file, build_file_head, configs):
         self.build_file = str(build_file)
+        self.build_file_head = str(build_file_head)
         self.configs = configs
+        self.printdebug("Directory: "+str(os.getcwd()))
 
     def processConfigs(self):
         self.target_configs = {}
@@ -213,7 +218,7 @@ class ConfigManager(object):
         self.walk(debug["target"])
         if release is not None:
             self.env = release["env"]
-            self.walk(self.addTarget(debug["target"]), self.addTarget(release["target"], "Release"))
+            self.walk(self.formatTarget(debug["target"]), self.addTarget(release["target"], "Release"))
         for target in self.target_configs:
             self.target_configs[target]["configurations"] = {
                 "Release": targetConfiguration(self.include_dirs, self.library_dirs, debug=False),
@@ -222,18 +227,15 @@ class ConfigManager(object):
         return self.target_configs, self.included_files
 
     def formatPath(self, path):
-        path = str(path)
-        if os.path.isabs(path):
-            out = os.path.relpath(path, self.build_file)
-        else:
-            out = os.path.relpath(path)
-        return out
+        return os.path.relpath(os.path.abspath(str(path)), self.build_file_head)
 
     def formatTarget(self, target):
         return xcode.common.QualifiedTarget(self.build_file, self.formatPath(target), None)
 
     def addTarget(self, target, default_configuration="Debug"):
+        self.printdebug("Target: "+str(target))
         target = self.formatTarget(target)
+        self.printdebug("      | "+str(target))
         if target not in self.target_configs:
             self.target_configs[target] = {
                 "default_configuration": default_configuration,
@@ -246,7 +248,6 @@ class ConfigManager(object):
     def addItem(self, child, target):
         target = str(target)
         head, tail = self.formatPath(child), None
-        self.recursion += 1
         while True:
             self.printdebug("Adding: "+head+(" (Tail: "+str(tail)+")")*bool(tail))
             if not head or head in [".", os.sep]:
@@ -269,16 +270,15 @@ class ConfigManager(object):
                 self.printdebug("| Duplicate")
                 self.recursion -= 1
                 break
-        self.recursion -= 1
 
     def walk(self, target, root=None):
-        self.recursion += 1
         if root and target in self.target_configs:
+            self.recursion += 1
             self.printdebug("Dependency: "+str(target))
             self.target_configs[root]["dependencies"].append(target)
+            self.recursion -= 1
         else:
             if root is None:
-                self.printdebug("Target: "+str(target))
                 root = self.addTarget(target)
             else:
                 self.printdebug("Item: "+str(target))
@@ -291,18 +291,21 @@ class ConfigManager(object):
                 self.recursion += 1
                 for child in bsources:
                     self.printdebug("Source: "+str(child))
+                    self.recursion += 1
                     self.addItem(child, root)
                     self.walk(child, root)
+                    self.recursion -= 1
                 self.recursion -= 1
                 self.printdebug("Children:")
                 self.recursion += 1
                 for child in target.children(scan=1):
                     self.printdebug("Child: "+str(child))
+                    self.recursion += 1
                     self.addItem(child, root)
                     self.walk(child, root)
+                    self.recursion -= 1
                 self.recursion -= 1
             self.recursion -= 1
-        self.recursion -= 1
 
     def printdebug(self, output):
         if self.debug:
