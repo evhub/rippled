@@ -104,7 +104,6 @@ def XCProject(project_node, configs):
     for target in target_list:
         target_dict[target] = {
             "toolset": "target",
-            "default_configuration": "Default",
             "type": "executable",
             "mac_xctest_bundle": 0,
             "mac_bundle": 0,
@@ -166,7 +165,6 @@ def XCProject(project_node, configs):
     build_file_dict = {
         "xcode_settings": projectconfig(),
         "configurations": {
-            "Default": projectConfiguration(),
             "Debug": projectConfiguration(debug=True),
             "Release": projectConfiguration(debug=False)
             },
@@ -211,29 +209,34 @@ class ConfigManager(object):
                 release = config
             else:
                 raise ValueError("Unkown variant "+str(config["variant"]))
-            self.env = debug["env"]
-            self.walk(debug["target"])
-            if release is not None:
-                self.env = release["env"]
-                self.walk(self.addTarget(debug["target"]), self.addTarget(release["target"]))
+        self.env = debug["env"]
+        self.walk(debug["target"])
+        if release is not None:
+            self.env = release["env"]
+            self.walk(self.addTarget(debug["target"]), self.addTarget(release["target"], "Release"))
         for target in self.target_configs:
             self.target_configs[target]["configurations"] = {
-                "Default": targetConfiguration(self.include_dirs, self.library_dirs),
                 "Release": targetConfiguration(self.include_dirs, self.library_dirs, debug=False),
                 "Debug": targetConfiguration(self.include_dirs, self.library_dirs, debug=True)
                 }
         return self.target_configs, self.included_files
 
     def formatPath(self, path):
-        return os.path.relpath(str(path), self.build_file)
+        path = str(path)
+        if os.path.isabs(path):
+            out = os.path.relpath(path, self.build_file)
+        else:
+            out = os.path.relpath(path)
+        return out
 
     def formatTarget(self, target):
         return xcode.common.QualifiedTarget(self.build_file, self.formatPath(target), None)
 
-    def addTarget(self, target):
+    def addTarget(self, target, default_configuration="Debug"):
         target = self.formatTarget(target)
         if target not in self.target_configs:
             self.target_configs[target] = {
+                "default_configuration": default_configuration,
                 "sources": [],
                 "libraries": [],
                 "dependencies": []
@@ -245,27 +248,26 @@ class ConfigManager(object):
         head, tail = self.formatPath(child), None
         self.recursion += 1
         while True:
-            self.printdebug("Adding: "+head+" (Tail: "+str(tail)+")")
-            if not head or head == ".":
+            self.printdebug("Adding: "+head+(" (Tail: "+str(tail)+")")*bool(tail))
+            if not head or head in [".", os.sep]:
                 break
             elif tail is None:
                 item = head
-                addtos = [self.included_files, self.target_configs[target]["sources"]]
+                addtos = [self.target_configs[target]["sources"], self.included_files]
             else:
                 item = head+os.sep
                 addtos = [self.include_dirs, self.library_dirs]
-            do = True
+            do = False
             for addto in addtos:
-                if item in addto:
-                    self.recursion += 1
-                    self.printdebug("| Duplicate")
-                    self.recursion -= 1
-                    do = False
-                else:
+                if item not in addto:
                     addto.append(item)
+                    do = True
             if do:
                 head, tail = os.path.split(head)
             else:
+                self.recursion += 1
+                self.printdebug("| Duplicate")
+                self.recursion -= 1
                 break
         self.recursion -= 1
 
@@ -276,10 +278,10 @@ class ConfigManager(object):
             self.target_configs[root]["dependencies"].append(target)
         else:
             if root is None:
-                self.printdebug("Root: "+str(target))
+                self.printdebug("Target: "+str(target))
                 root = self.addTarget(target)
             else:
-                self.printdebug("Target: "+str(target))
+                self.printdebug("Item: "+str(target))
             self.recursion += 1
             if not os.path.isabs(str(target)) and target.has_builder():
                 builder = target.get_builder().get_name(self.env)
