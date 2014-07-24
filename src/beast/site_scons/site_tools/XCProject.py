@@ -4,8 +4,7 @@
 
 
 """
-A tool for working with .pbxproj files.
-Necessary for working with .xcodeproj files.
+A tool for generating .xcodeproj files by linking together SCons and gyp.
 """
 
 
@@ -255,14 +254,19 @@ class ConfigManager(object):
             else:
                 item = head+os.sep
                 addtos = [self.include_dirs, self.library_dirs]
+            do = True
             for addto in addtos:
                 if item in addto:
                     self.recursion += 1
                     self.printdebug("| Duplicate")
                     self.recursion -= 1
+                    do = False
                 else:
                     addto.append(item)
-            head, tail = os.path.split(head)
+            if do:
+                head, tail = os.path.split(head)
+            else:
+                break
         self.recursion -= 1
 
     def walk(self, target, root=None):
