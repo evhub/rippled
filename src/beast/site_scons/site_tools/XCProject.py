@@ -97,8 +97,8 @@ def exists(env):
 
 
 def XCProject(project_node, configs):
-    build_file = str(project_node)
-    target_configs = ConfigManager(build_file, configs).processConfigs()
+    build_file = os.path.relpath(str(project_node))
+    target_configs, included_files, include_dirs, library_dirs = ConfigManager(build_file, configs).processConfigs()
     target_list = xsorted(target_configs.keys())
 
     target_dict = {}
@@ -107,9 +107,9 @@ def XCProject(project_node, configs):
             "toolset": "target",
             "default_configuration": "Default",
             "configurations": {
-                "Default": targetConfiguration(),
-                "Release": targetConfiguration(debug=False),
-                "Debug": targetConfiguration(debug=True)
+                "Default": targetConfiguration(include_dirs, library_dirs),
+                "Release": targetConfiguration(include_dirs, library_dirs, debug=False),
+                "Debug": targetConfiguration(include_dirs, library_dirs, debug=True)
                 },
             "type": "executable",
             "mac_xctest_bundle": 0,
@@ -176,7 +176,7 @@ def XCProject(project_node, configs):
             "Debug": projectConfiguration(debug=True),
             "Release": projectConfiguration(debug=False)
             },
-        "included_files": [],
+        "included_files": included_files,
         "targets": target_dict_list
         }
 
@@ -187,7 +187,7 @@ def XCProject(project_node, configs):
             "xcode_serialize_all_test_runs": True,
             "xcode_project_version": None,
             "xcode_list_excluded_files": True,
-            "standalone": True,
+            "standalone": None,
             "support_target_suffix": " Support"
             }
         }
@@ -200,11 +200,14 @@ class ConfigManager(object):
     recursion = 0
 
     def __init__(self, build_file, configs):
-        self.build_file = build_file
+        self.build_file = str(build_file)
         self.configs = configs
 
     def processConfigs(self):
         self.target_configs = {}
+        self.included_files = []
+        self.include_dirs = []
+        self.library_dirs = []
         release = None
         for config in self.configs:
             self.printdebug("Config: "+str(config))
@@ -219,10 +222,13 @@ class ConfigManager(object):
             if release is not None:
                 self.env = release["env"]
                 self.walk(self.addTarget(debug["target"]), self.addTarget(release["target"]))
-        return self.target_configs
+        return self.target_configs, self.included_files, self.include_dirs, self.library_dirs
+
+    def formatPath(self, path):
+        return os.path.relpath(str(path), self.build_file)
 
     def formatTarget(self, target):
-        return xcode.common.QualifiedTarget(self.build_file, str(target), None)
+        return xcode.common.QualifiedTarget(self.build_file, self.formatPath(target), None)
 
     def addTarget(self, target):
         target = self.formatTarget(target)
@@ -234,11 +240,29 @@ class ConfigManager(object):
                 }
         return target
 
-    def addItem(self, item, target):
-        item = str(item)
+    def addItem(self, child, target):
         target = str(target)
-        if item not in self.target_configs[target]["sources"]:
-            self.target_configs[target]["sources"].append(item)
+        head, tail = self.formatPath(child), None
+        self.recursion += 1
+        while True:
+            self.printdebug("Adding: "+head+" (Tail: "+str(tail)+")")
+            if not head or head == ".":
+                break
+            elif tail is None:
+                item = head
+                addtos = [self.included_files, self.target_configs[target]["sources"]]
+            else:
+                item = head+os.sep
+                addtos = [self.include_dirs, self.library_dirs]
+            for addto in addtos:
+                if item in addto:
+                    self.recursion += 1
+                    self.printdebug("| Duplicate")
+                    self.recursion -= 1
+                else:
+                    addto.append(item)
+            head, tail = os.path.split(head)
+        self.recursion -= 1
 
     def walk(self, target, root=None):
         self.recursion += 1
@@ -296,9 +320,9 @@ class Options(object):
     generator_output = ""
 
 
-def targetConfiguration(defines=None,
-                        include_dirs=None,
+def targetConfiguration(include_dirs=None,
                         library_dirs=None,
+                        defines=None,
                         mac_framework_dirs=None,
                         debug=None):
     """Wraps targetconfig."""
