@@ -98,7 +98,7 @@ def exists(env):
 
 def XCProject(project_node, configs):
     build_file = os.path.relpath(str(project_node))
-    target_configs, included_files, include_dirs, library_dirs = ConfigManager(build_file, configs).processConfigs()
+    target_configs, included_files = ConfigManager(build_file, configs).processConfigs()
     target_list = xsorted(target_configs.keys())
 
     target_dict = {}
@@ -106,11 +106,6 @@ def XCProject(project_node, configs):
         target_dict[target] = {
             "toolset": "target",
             "default_configuration": "Default",
-            "configurations": {
-                "Default": targetConfiguration(include_dirs, library_dirs),
-                "Release": targetConfiguration(include_dirs, library_dirs, debug=False),
-                "Debug": targetConfiguration(include_dirs, library_dirs, debug=True)
-                },
             "type": "executable",
             "mac_xctest_bundle": 0,
             "mac_bundle": 0,
@@ -222,7 +217,13 @@ class ConfigManager(object):
             if release is not None:
                 self.env = release["env"]
                 self.walk(self.addTarget(debug["target"]), self.addTarget(release["target"]))
-        return self.target_configs, self.included_files, self.include_dirs, self.library_dirs
+        for target in self.target_configs:
+            self.target_configs[target]["configurations"] = {
+                "Default": targetConfiguration(self.include_dirs, self.library_dirs),
+                "Release": targetConfiguration(self.include_dirs, self.library_dirs, debug=False),
+                "Debug": targetConfiguration(self.include_dirs, self.library_dirs, debug=True)
+                }
+        return self.target_configs, self.included_files
 
     def formatPath(self, path):
         return os.path.relpath(str(path), self.build_file)
