@@ -1640,6 +1640,7 @@
 		1D8B70D75E9E3AFCF9AD6485 /* enable_wait_for_async.test.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = enable_wait_for_async.test.cpp; path = ../../src/beast/beast/asio/tests/enable_wait_for_async.test.cpp; sourceTree = "<group>"; };
 		1D9DE84B71212AC847A95042 /* msvc.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; path = msvc.hpp; sourceTree = "<group>"; };
 		1D9E7193799EE8CF05DAF186 /* at_fwd.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = at_fwd.hpp; path = ../../../../../../Library/Boost/boost/mpl/at_fwd.hpp; sourceTree = "<group>"; };
+		1DA0DBA8ACD0727F2DCBFA7F /* rippled */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = rippled; path = build/clang.debug/rippled; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DA3FE89E1811CA0712DBEA0 /* LedgerConsensus.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LedgerConsensus.h; sourceTree = "<group>"; };
 		1DA761D35492EA84ECB346F3 /* BindHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BindHandler.h; sourceTree = "<group>"; };
 		1DB80B52A6CA1DE2A7043CB5 /* bind_handler.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; path = bind_handler.hpp; sourceTree = "<group>"; };
@@ -3704,7 +3705,6 @@
 		60D118F461E7F8F40E44F6EA /* socket_types.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = socket_types.hpp; path = ../../../../../../Library/Boost/boost/asio/detail/socket_types.hpp; sourceTree = "<group>"; };
 		60D38BA90DE6457B4A662CD8 /* is_polymorphic.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = is_polymorphic.hpp; path = ../../../../../../Library/Boost/boost/type_traits/is_polymorphic.hpp; sourceTree = "<group>"; };
 		60DAE63A042DDF9971414E61 /* has_apply.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = has_apply.hpp; path = ../../../../../../Library/Boost/boost/mpl/aux_/has_apply.hpp; sourceTree = "<group>"; };
-		60DB3B3A996F74D673586852 /* rippled */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = rippled; path = "Builds/XCode/RippleD:../../build/clang.release/rippled"; sourceTree = BUILT_PRODUCTS_DIR; };
 		60E4781E8F156EA7945790D6 /* atomic_pointer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = atomic_pointer.h; path = ../../src/hyperleveldb/port/atomic_pointer.h; sourceTree = "<group>"; };
 		60F977AD4995EE6340BBF3EE /* throw_exception.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; path = throw_exception.hpp; sourceTree = "<group>"; };
 		60FC44089D95000E70DFC8D8 /* regex_traits.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = regex_traits.hpp; path = ../../../../../../Library/Boost/boost/regex/regex_traits.hpp; sourceTree = "<group>"; };
@@ -4285,7 +4285,6 @@
 		75BB81668415E54077AC1B65 /* String.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = String.cpp; sourceTree = "<group>"; };
 		75BE0C74B0AD9F17949EAAB2 /* address_v4.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = address_v4.hpp; path = ../../../../../../Library/Boost/boost/asio/ip/impl/address_v4.hpp; sourceTree = "<group>"; };
 		75C08AE58F1866711290720A /* log_reader.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = log_reader.cc; path = ../../src/rocksdb/db/log_reader.cc; sourceTree = "<group>"; };
-		75C1AD58331364313BD8D953 /* rippled */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = rippled; path = "Builds/XCode/RippleD:../../build/clang.debug/rippled"; sourceTree = BUILT_PRODUCTS_DIR; };
 		75C3CB6B3198AB97DF9BE4ED /* value_type_of.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = value_type_of.hpp; path = ../../../../../../Library/Boost/boost/bimap/relation/support/value_type_of.hpp; sourceTree = "<group>"; };
 		75D1EA17BCB7E388E236D17A /* AccountFromString.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AccountFromString.h; path = ../../src/ripple/module/rpc/impl/AccountFromString.h; sourceTree = "<group>"; };
 		75D56C54114F034282ABECE4 /* compaction_picker.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = compaction_picker.cc; path = ../../src/rocksdb/db/compaction_picker.cc; sourceTree = "<group>"; };
@@ -5425,6 +5424,7 @@
 		9EAD33A635C143E28C86A9C9 /* size.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = size.hpp; path = ../../../../../../Library/Boost/boost/preprocessor/variadic/size.hpp; sourceTree = "<group>"; };
 		9EB19713C7C023B05417C677 /* attribute_value_impl.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; name = attribute_value_impl.hpp; path = ../../../../../../Library/Boost/boost/log/attributes/attribute_value_impl.hpp; sourceTree = "<group>"; };
 		9EC8474EF48452379DC23EE0 /* RipplePublicKeyHash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RipplePublicKeyHash.h; path = ../../src/ripple/types/api/RipplePublicKeyHash.h; sourceTree = "<group>"; };
+		9ECCA52E5163AA88A4421DC6 /* rippled */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = rippled; path = build/clang.release/rippled; sourceTree = BUILT_PRODUCTS_DIR; };
 		9ECD54DE7E12AC2551E2415B /* openssl_init.ipp */ = {isa = PBXFileReference; lastKnownFileType = text; name = openssl_init.ipp; path = ../../../../../../Library/Boost/boost/asio/ssl/detail/impl/openssl_init.ipp; sourceTree = "<group>"; };
 		9EE9CAAFAFD8900B44156DD8 /* ComputeOfferLiquidity.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ComputeOfferLiquidity.cpp; path = ../../src/ripple/module/app/paths/ComputeOfferLiquidity.cpp; sourceTree = "<group>"; };
 		9EEA3ECA13A6EA139E8B1ADB /* set0.hpp */ = {isa = PBXFileReference; lastKnownFileType = text; path = set0.hpp; sourceTree = "<group>"; };
@@ -11845,8 +11845,8 @@
 		91B4181648D74DB9FA7BF390 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				75C1AD58331364313BD8D953 /* rippled */,
-				60DB3B3A996F74D673586852 /* rippled */,
+				1DA0DBA8ACD0727F2DCBFA7F /* rippled */,
+				9ECCA52E5163AA88A4421DC6 /* rippled */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -18973,8 +18973,8 @@
 			dependencies = (
 			);
 			name = ../../build/clang.debug/rippled;
-			productName = "Builds/XCode/RippleD:../../build/clang.debug/rippled";
-			productReference = 75C1AD58331364313BD8D953 /* rippled */;
+			productName = build/clang.debug/rippled;
+			productReference = 1DA0DBA8ACD0727F2DCBFA7F /* rippled */;
 			productType = "com.apple.product-type.tool";
 		};
 		DB619DB597F0CB7B740EE363 /* ../../build/clang.release/rippled */ = {
@@ -18990,8 +18990,8 @@
 				D247B407F956D97891C6B391 /* PBXTargetDependency */,
 			);
 			name = ../../build/clang.release/rippled;
-			productName = "Builds/XCode/RippleD:../../build/clang.release/rippled";
-			productReference = 60DB3B3A996F74D673586852 /* rippled */;
+			productName = build/clang.release/rippled;
+			productReference = 9ECCA52E5163AA88A4421DC6 /* rippled */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -20644,7 +20644,7 @@
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGET_BUILD_DIR = ./../../build/clang.release/rippled;
+				TARGET_BUILD_DIR = build/clang.release/rippled;
 			};
 			name = Debug;
 		};
@@ -21577,7 +21577,7 @@
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGET_BUILD_DIR = ./../../build/clang.debug/rippled;
+				TARGET_BUILD_DIR = build/clang.debug/rippled;
 			};
 			name = Debug;
 		};
@@ -22458,7 +22458,7 @@
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGET_BUILD_DIR = ./../../build/clang.debug/rippled;
+				TARGET_BUILD_DIR = build/clang.debug/rippled;
 			};
 			name = Release;
 		};
@@ -23346,7 +23346,7 @@
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TARGET_BUILD_DIR = ./../../build/clang.release/rippled;
+				TARGET_BUILD_DIR = build/clang.release/rippled;
 			};
 			name = Release;
 		};

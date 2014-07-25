@@ -99,6 +99,7 @@ def XCProject(project_node, configs):
     project_node = str(project_node)
     build_file_head, build_file_tail = os.path.split(project_node)
     build_file = os.path.join(build_file_head, os.path.relpath(os.path.abspath(os.path.join(build_file_head, build_file_tail)), build_file_head))
+    assert project_node == build_file, "Build file directory must be relative."
 
     target_configs, included_files = ConfigManager(build_file, build_file_head, configs).processConfigs()
     target_list = xsorted(target_configs.keys())
@@ -229,17 +230,17 @@ class ConfigManager(object):
         return xcode.common.QualifiedTarget(self.build_file, self.formatPath(target), None)
 
     def addTarget(self, target, default_configuration="Debug"):
-        self.printdebug("Target: "+str(target))
+        name = str(target)
         target = self.formatTarget(target)
-        self.printdebug("      | "+str(target))
+        self.printdebug("Target: "+str(target)+" (Name: "+name+")")
         if target not in self.target_configs:
             self.target_configs[target] = {
                 "default_configuration": default_configuration,
                 "sources": [],
                 "libraries": [],
                 "dependencies": [],
-                "product_name": str(target),
-                "product_dir": os.path.join(os.curdir, unQualifyTarget(str(target))),
+                "product_name": name,
+                "product_dir": name,
                 "product_prefix": None,
                 "product_extension": None
                 }
