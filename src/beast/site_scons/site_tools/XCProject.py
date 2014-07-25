@@ -197,8 +197,8 @@ class ConfigManager(object):
     def __init__(self, build_file, build_file_head, configs):
         self.build_file = str(build_file)
         self.build_file_head = str(build_file_head)
+        self.printdebug("Directory: "+self.build_file_head)
         self.configs = configs
-        self.printdebug("Directory: "+str(os.getcwd()))
 
     def processConfigs(self):
         self.target_configs = {}
@@ -250,7 +250,7 @@ class ConfigManager(object):
         head, tail = self.formatPath(child), None
         while True:
             self.printdebug("Adding: "+head+(" (Tail: "+str(tail)+")")*bool(tail))
-            if not head or head in [".", os.sep]:
+            if not head or head == ".":
                 break
             elif tail is None:
                 item = head
