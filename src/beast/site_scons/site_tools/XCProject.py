@@ -110,10 +110,6 @@ def XCProject(project_node, configs):
             "type": "executable",
             "mac_xctest_bundle": 0,
             "mac_bundle": 0,
-            "product_name": None,
-            "product_dir": None,
-            "product_prefix": None,
-            "product_extension": None,
             "actions": [
 # What a properly formatted action should look like:
 ##                { "message": None,
@@ -241,7 +237,11 @@ class ConfigManager(object):
                 "default_configuration": default_configuration,
                 "sources": [],
                 "libraries": [],
-                "dependencies": []
+                "dependencies": [],
+                "product_name": str(target),
+                "product_dir": os.path.join(os.curdir, unQualifyTarget(str(target))),
+                "product_prefix": None,
+                "product_extension": None
                 }
         return target
 
@@ -250,7 +250,7 @@ class ConfigManager(object):
         head, tail = self.formatPath(child), None
         while True:
             self.printdebug("Adding: "+head+(" (Tail: "+str(tail)+")")*bool(tail))
-            if not head or head == ".":
+            if not head or head == os.curdir:
                 break
             elif tail is None:
                 item = head
