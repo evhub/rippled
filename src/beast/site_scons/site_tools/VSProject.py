@@ -665,7 +665,7 @@ class _ProjectGenerator(object):
         f.write('  <ItemGroup Label="ProjectConfigurations">\r\n')
         for config in self.configs:
             variant = config.variant
-            platform = config.platform            
+            platform = config.platform           
             f.write(V12DSPProjectConfiguration % locals())
         f.write('  </ItemGroup>\r\n')
 
