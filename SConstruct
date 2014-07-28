@@ -610,7 +610,7 @@ vcxproj = base.VSProject(
 base.Alias('vcxproj', vcxproj)
 
 xcodeproj = base.XCProject(
-    os.path.join('Builds', 'XCode', 'RippleD'),
+    os.path.join('Builds', 'XCode', 'rippled'),
     source = [],
     XCPROJECT_CONFIGS = clang_configs)
 base.Alias('xcodeproj', xcodeproj)
