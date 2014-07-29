@@ -41,6 +41,17 @@ def makeList(x):
         return [x]
 
 
+def itemList(items):
+    out = []
+    for item in items:
+        if isinstance(item, dict):
+            for k,v in item.items():
+                out.append(str(k)+"="+str(v))
+        else:
+            out.append(str(item))
+    return out
+
+
 def unQualifyTarget(target):
     return xcode.common.ParseQualifiedTarget(target)[1]
 
@@ -205,13 +216,8 @@ def XCProject(project_node, configs):
 
 
 class ConfigManager(object):
-    debug = True
+    debug = False
     recursion = 0
-    extras = [
-        "/usr/local/bin/",
-        "/usr/local/lib/",
-        "/usr/local/include/"
-        ]
 
     def __init__(self, build_file, build_file_head, configs):
         self.build_file = str(build_file)
@@ -224,9 +230,16 @@ class ConfigManager(object):
         self.included_files = []
         self.include_dirs = []
         self.library_dirs = []
-        for path in self.extras:
-            self.addItem(localPath(path))
+        self.defines_dict = {}
+        self.printdebug("Extras:")
+        self.recursion += 1
+        self.addItem(localPath("/usr/local/bin/"), None, [self.include_dirs, self.library_dirs])
+        self.addItem(localPath("/usr/local/include/"), None, [self.include_dirs])
+        self.addItem(localPath("/usr/local/lib/"), None, [self.library_dirs])
+        self.recursion -= 1
         release = None
+        self.printdebug("Configs:")
+        self.recursion += 1
         for config in self.configs:
             self.printdebug("Config: "+str(config))
             if config["variant"] == "debug":
@@ -235,18 +248,35 @@ class ConfigManager(object):
                 release = config
             else:
                 raise ValueError("Unkown variant "+str(config["variant"]))
+        self.recursion -= 1
+        self.printdebug("Debug:")
+        self.recursion += 1
         self.env = debug["env"]
+        self.update()
         self.walk(debug["target"])
+        self.recursion -= 1
         if release is not None:
+            self.printdebug("Release:")
+            self.recursion += 1
             self.env = release["env"]
             self.walk(self.formatTarget(debug["target"]), self.addTarget(release["target"], "Release"))
+            self.recursion -= 1
         self.sort()
         for target in self.target_configs:
             self.target_configs[target]["configurations"] = {
-                "Release": targetConfiguration(self.include_dirs, self.library_dirs, debug=False),
-                "Debug": targetConfiguration(self.include_dirs, self.library_dirs, debug=True)
+                "Release": targetConfiguration(self.include_dirs, self.library_dirs, self.defines_dict[target], debug=False),
+                "Debug": targetConfiguration(self.include_dirs, self.library_dirs, self.defines_dict[target], debug=True)
                 }
         return self.target_configs, self.included_files
+
+    def update(self):
+        self.printdebug("Environment:")
+        self.recursion += 1
+        for include_path in self.env["CPPPATH"]:
+            self.addItem(include_path, None, [self.include_dirs])
+        for library_path in self.env["LIBPATH"]:
+            self.addItem(library_path, None, [self.library_dirs])
+        self.recursion -= 1
 
     def sort(self):
         self.included_files = xsorted(self.included_files)
@@ -265,6 +295,7 @@ class ConfigManager(object):
         name = str(target)
         target = self.formatTarget(target)
         self.printdebug("Target: "+str(target)+" (Name: "+name+")")
+        self.recursion += 1
         if target not in self.target_configs:
             self.target_configs[target] = {
                 "default_configuration": default_configuration,
@@ -276,21 +307,42 @@ class ConfigManager(object):
                 "product_prefix": None,
                 "product_extension": None
                 }
+        if target not in self.defines_dict:
+            self.defines_dict[target] = itemList(self.env["CPPDEFINES"])
+        self.printdebug("Libraries:")
+        self.recursion += 1
+        for lib in self.env["LIBS"]:
+            self.addItem(lib, target, False, [self.target_configs[target]["libraries"]])
+        self.recursion -= 2
         return target
 
-    def addItem(self, child, target=None):
+    def addItem(self, child, target=None, head_addtos=None, tail_addtos=None):
+        if target is not None:
+            target = str(target)
+        if head_addtos is None:
+            head_addtos = [self.include_dirs]
+        if tail_addtos is None:
+            if target is None:
+                tail_addtos = False
+            else:
+                tail_addtos = [self.target_configs[target]["sources"]]
         head, tail = self.formatPath(child), None
         while True:
             self.printdebug("Adding: "+head+(" (Tail: "+str(tail)+")")*bool(tail))
             if not head or head == os.curdir:
                 break
-            elif tail is None and target is not None:
+            elif tail is None and tail_addtos:
                 item = head
-                target = str(target)
-                addtos = [self.target_configs[target]["sources"], self.included_files]
-            else:
+                if item in self.included_files:
+                    break
+                else:
+                    addtos = tail_addtos+[self.included_files]
+            elif head_addtos:
                 item = head+os.sep
-                addtos = [self.include_dirs, self.library_dirs]
+                addtos = head_addtos
+            else:
+                break
+            self.printaddtos(addtos, target)
             do = False
             for addto in addtos:
                 if item not in addto:
@@ -304,6 +356,28 @@ class ConfigManager(object):
                     self.printdebug("Duplicate.")
                     self.recursion -= 1
                 break
+
+    def printaddtos(self, addtos, target=None):
+        out = []
+        for addto in addtos:
+            if addto is self.included_files:
+                out.append("Included Files")
+            elif addto is self.include_dirs:
+                out.append("Include Directories")
+            elif addto is self.library_dirs:
+                out.append("Library Directories")
+            elif target and addto is self.target_configs[target]["sources"]:
+                out.append("Sources")
+            elif target and addto is self.target_configs[target]["libraries"]:
+                out.append("Libraries")
+            elif target and addto is self.target_configs[target]["dependencies"]:
+                out.append("Dependencies")
+            else:
+                print("XCProject Warning: Adding to unknown file list "+repr(addto))
+                out.append("Unknown")
+        self.recursion += 1
+        self.printdebug("To: "+", ".join(out))
+        self.recursion -= 1
 
     def walk(self, target, root=None):
         if root and target in self.target_configs:
