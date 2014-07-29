@@ -14,6 +14,7 @@ A tool for generating .xcodeproj files by linking together SCons and gyp.
 from __future__ import with_statement, print_function
 
 import os
+import posixpath
 
 from VSProject import xsorted
 
@@ -42,6 +43,19 @@ def makeList(x):
 
 def unQualifyTarget(target):
     return xcode.common.ParseQualifiedTarget(target)[1]
+
+
+def convertPath(path, start=os.path, end=posixpath):
+    out = []
+    head, tail = path, None
+    while head:
+        head, tail = start.split(head)
+        out = [tail]+out
+    return end.join(*out)
+
+
+def localPath(path):
+    return convertPath(path, posixpath, os.path)
 
 
 # SCons: ---------------------------------------------------------------------------
@@ -96,10 +110,9 @@ def exists(env):
 
 
 def XCProject(project_node, configs):
-    project_node = str(project_node)
-    build_file_head, build_file_tail = os.path.split(project_node)
-    build_file = os.path.join(build_file_head, os.path.relpath(os.path.abspath(os.path.join(build_file_head, build_file_tail)), build_file_head))
-    assert project_node == build_file, "Build file directory must be relative."
+    project_node = convertPath(os.path.normpath(str(project_node)))
+    build_file_head, build_file_tail = posixpath.split(project_node)
+    build_file = posixpath.join(build_file_head, build_file_tail)
 
     target_configs, included_files = ConfigManager(build_file, build_file_head, configs).processConfigs()
     target_list = xsorted(target_configs.keys())
@@ -190,6 +203,11 @@ def XCProject(project_node, configs):
 class ConfigManager(object):
     debug = True
     recursion = 0
+    extras = [
+        "/usr/local/bin/",
+        "/usr/local/lib/",
+        "/usr/local/include/"
+        ]
 
     def __init__(self, build_file, build_file_head, configs):
         self.build_file = str(build_file)
@@ -202,6 +220,8 @@ class ConfigManager(object):
         self.included_files = []
         self.include_dirs = []
         self.library_dirs = []
+        for path in self.extras:
+            self.addItem(localPath(path))
         release = None
         for config in self.configs:
             self.printdebug("Config: "+str(config))
@@ -224,7 +244,7 @@ class ConfigManager(object):
         return self.target_configs, self.included_files
 
     def formatPath(self, path):
-        return os.path.relpath(os.path.abspath(str(path)), self.build_file_head)
+        return convertPath(os.path.relpath(os.path.abspath(str(path)), self.build_file_head))
 
     def formatTarget(self, target):
         return xcode.common.QualifiedTarget(self.build_file, self.formatPath(target), None)
@@ -246,15 +266,15 @@ class ConfigManager(object):
                 }
         return target
 
-    def addItem(self, child, target):
-        target = str(target)
+    def addItem(self, child, target=None):
         head, tail = self.formatPath(child), None
         while True:
             self.printdebug("Adding: "+head+(" (Tail: "+str(tail)+")")*bool(tail))
             if not head or head == os.curdir:
                 break
-            elif tail is None:
+            elif tail is None and target is not None:
                 item = head
+                target = str(target)
                 addtos = [self.target_configs[target]["sources"], self.included_files]
             else:
                 item = head+os.sep
@@ -265,11 +285,12 @@ class ConfigManager(object):
                     addto.append(item)
                     do = True
             if do:
-                head, tail = os.path.split(head)
+                head, tail = posixpath.split(head)
             else:
-                self.recursion += 1
-                self.printdebug("| Duplicate")
-                self.recursion -= 1
+                if tail is None:
+                    self.recursion += 1
+                    self.printdebug("Duplicate.")
+                    self.recursion -= 1
                 break
 
     def walk(self, target, root=None):
