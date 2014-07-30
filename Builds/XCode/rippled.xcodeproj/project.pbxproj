@@ -8295,8 +8295,8 @@
 				399532A338D41F91F9371B04 /* libboost_regex.a in Frameworks */,
 				73B44085DEF7845CA6F7E9AB /* libboost_system.a in Frameworks */,
 				24AE46F0090E675CBAD1E50B /* libboost_thread.a in Frameworks */,
-				E23BF862A67D6B2E13883FE9 /* dl in Frameworks */,
 				C6B85C1199C476B22DF50931 /* crypto in Frameworks */,
+				E23BF862A67D6B2E13883FE9 /* dl in Frameworks */,
 				95EF2B9252AD1D688C917CD9 /* protobuf in Frameworks */,
 				BCF311AB5F452BDEBA65BA63 /* ssl in Frameworks */,
 			);
@@ -19762,9 +19762,9 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					OPENSSL_NO_SSL2,
-					NDEBUG,
 					"BEAST_COMPILE_OBJECTIVE_CPP=1",
+					NDEBUG,
+					OPENSSL_NO_SSL2,
 				);
 				HEADER_SEARCH_PATHS = (
 					../,
@@ -20232,9 +20232,9 @@
 			buildSettings = {
 				EXECUTABLE_PREFIX = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					OPENSSL_NO_SSL2,
-					NDEBUG,
 					"BEAST_COMPILE_OBJECTIVE_CPP=1",
+					NDEBUG,
+					OPENSSL_NO_SSL2,
 				);
 				HEADER_SEARCH_PATHS = (
 					../,
@@ -20712,10 +20712,10 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					OPENSSL_NO_SSL2,
-					DEBUG,
-					_DEBUG,
 					"BEAST_COMPILE_OBJECTIVE_CPP=1",
+					DEBUG,
+					OPENSSL_NO_SSL2,
+					_DEBUG,
 				);
 				HEADER_SEARCH_PATHS = (
 					../,
@@ -21192,10 +21192,10 @@
 			buildSettings = {
 				EXECUTABLE_PREFIX = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					OPENSSL_NO_SSL2,
-					DEBUG,
-					_DEBUG,
 					"BEAST_COMPILE_OBJECTIVE_CPP=1",
+					DEBUG,
+					OPENSSL_NO_SSL2,
+					_DEBUG,
 				);
 				HEADER_SEARCH_PATHS = (
 					../,

@@ -193,8 +193,8 @@ def XCProject(project_node, configs):
     build_file_dict = {
         "xcode_settings": projectconfig(),
         "configurations": {
-            "Debug": projectConfiguration(debug=True),
-            "Release": projectConfiguration(debug=False)
+            "Debug": projectConfiguration(True),
+            "Release": projectConfiguration(False)
             },
         "included_files": included_files,
         "targets": target_dict_list
@@ -264,8 +264,8 @@ class ConfigManager(object):
         self.sort()
         for target in self.target_configs:
             self.target_configs[target]["configurations"] = {
-                "Release": targetConfiguration(self.include_dirs, self.library_dirs, self.defines_dict[target], debug=False),
-                "Debug": targetConfiguration(self.include_dirs, self.library_dirs, self.defines_dict[target], debug=True)
+                "Release": targetConfiguration(False, self.include_dirs, self.library_dirs, self.defines_dict[target]),
+                "Debug": targetConfiguration(True, self.include_dirs, self.library_dirs, self.defines_dict[target])
                 }
         return self.target_configs, self.included_files
 
@@ -284,6 +284,10 @@ class ConfigManager(object):
         self.library_dirs = xsorted(self.library_dirs)
         for target in self.target_configs:
             self.target_configs[target]["sources"] = xsorted(self.target_configs[target]["sources"])
+            self.target_configs[target]["libraries"] = xsorted(self.target_configs[target]["libraries"])
+            self.target_configs[target]["dependencies"] = xsorted(self.target_configs[target]["dependencies"])
+        for target in self.defines_dict:
+            self.defines_dict[target] = xsorted(self.defines_dict[target])
 
     def formatPath(self, path):
         return convertPath(os.path.relpath(os.path.abspath(str(path)), self.build_file_head))
@@ -438,18 +442,19 @@ class Options(object):
     generator_output = ""
 
 
-def targetConfiguration(include_dirs=None,
+def targetConfiguration(debug=None,
+                        include_dirs=None,
                         library_dirs=None,
                         defines=None,
-                        mac_framework_dirs=None,
-                        debug=None):
+                        mac_framework_dirs=None
+                        ):
     """Wraps targetconfig."""
     return {
         "mac_framework_dirs": mac_framework_dirs or [],
         "include_dirs": include_dirs or [],
         "library_dirs": library_dirs or [],
         "defines": defines or [],
-        "xcode_settings": targetconfig(debug=debug)
+        "xcode_settings": targetconfig(debug)
         }
 
 
@@ -472,7 +477,7 @@ def targetconfig(debug=None):
 def projectConfiguration(debug=None):
     """Wraps projectconfig."""
     return {
-        "xcode_settings": projectconfig(debug=debug)
+        "xcode_settings": projectconfig(debug)
         }
     
 
