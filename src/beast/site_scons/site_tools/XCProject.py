@@ -233,9 +233,16 @@ class ConfigManager(object):
         self.defines_dict = {}
         self.printdebug("Extras:")
         self.recursion += 1
-        self.addItem(localPath("/usr/local/bin/"), None, [self.include_dirs, self.library_dirs])
-        self.addItem(localPath("/usr/local/include/"), None, [self.include_dirs])
-        self.addItem(localPath("/usr/local/lib/"), None, [self.library_dirs])
+        extras = [
+            ("/usr/local/bin/",     [self.library_dirs]),
+            ("/usr/bin/",           [self.library_dirs]),
+            ("/usr/local/include/", [self.include_dirs]),
+            ("/usr/include/",       [self.include_dirs]),
+            ("/usr/local/lib/",     [self.library_dirs]),
+            ("/usr/lib/",           [self.library_dirs])
+            ]
+        for path, addtos in extras:
+            self.addItem(localPath(path), None, addtos)
         self.recursion -= 1
         release = None
         self.printdebug("Configs:")
