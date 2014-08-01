@@ -56,21 +56,32 @@ def unQualifyTarget(target):
     return xcode.common.ParseQualifiedTarget(target)[1]
 
 
-def convertPath(path, start=os.path, end=posixpath):
+def pathList(path, splitter=posixpath):
     out = []
     head, tail = path, None
     while head:
-        head, tail = start.split(head)
+        head, tail = splitter.split(head)
         if tail:
             out = [tail]+out
         else:
             break
-    out = [head]+out
+    return [head]+out
+
+
+def convertPath(path, start=os.path, end=posixpath):
+    out = pathList(path, start)
     return end.join(*out)
 
 
 def localPath(path):
     return convertPath(path, posixpath, os.path)
+
+
+def onlyParents(path, splitter=os.path):
+    for dirname in pathList(path, splitter):
+        if dirname and dirname != os.pardir:
+            return False
+    return True
 
 
 # SCons: ---------------------------------------------------------------------------
@@ -226,24 +237,12 @@ class ConfigManager(object):
         self.configs = configs
 
     def processConfigs(self):
+        self.all_files = []
         self.target_configs = {}
         self.included_files = []
         self.include_dirs = []
         self.library_dirs = []
         self.defines_dict = {}
-        self.printdebug("Extras:")
-        self.recursion += 1
-        extras = [
-            ("/usr/local/bin/",     [self.library_dirs]),
-            ("/usr/bin/",           [self.library_dirs]),
-            ("/usr/local/include/", [self.include_dirs]),
-            ("/usr/include/",       [self.include_dirs]),
-            ("/usr/local/lib/",     [self.library_dirs]),
-            ("/usr/lib/",           [self.library_dirs])
-            ]
-        for path, addtos in extras:
-            self.addItem(localPath(path), None, addtos)
-        self.recursion -= 1
         release = None
         self.printdebug("Configs:")
         self.recursion += 1
@@ -268,6 +267,19 @@ class ConfigManager(object):
             self.env = release["env"]
             self.walk(self.formatTarget(debug["target"]), self.addTarget(release["target"], "Release"))
             self.recursion -= 1
+        self.printdebug("Extras:")
+        self.recursion += 1
+        extras = [
+            ("/usr/local/bin/",     [self.library_dirs]),
+            ("/usr/bin/",           [self.library_dirs]),
+            ("/usr/local/include/", [self.include_dirs]),
+            ("/usr/include/",       [self.include_dirs]),
+            ("/usr/local/lib/",     [self.library_dirs]),
+            ("/usr/lib/",           [self.library_dirs])
+            ]
+        for path, addtos in extras:
+            self.addItem(localPath(path), None, addtos)
+        self.recursion -= 1
         self.sort()
         for target in self.target_configs:
             self.target_configs[target]["configurations"] = {
@@ -330,24 +342,28 @@ class ConfigManager(object):
     def addItem(self, child, target=None, head_addtos=None, tail_addtos=None):
         if target is not None:
             target = str(target)
-        if head_addtos is None:
-            head_addtos = [self.include_dirs]
         if tail_addtos is None:
-            if target is None:
+            if head_addtos:
+                tail_addtos = head_addtos
+            elif target is None:
                 tail_addtos = False
             else:
                 tail_addtos = [self.target_configs[target]["sources"]]
+        if head_addtos is None:
+            head_addtos = [self.include_dirs]
         head, tail = self.formatPath(child), None
-        while True:
+        while head and head != os.curdir and not onlyParents(head, posixpath):
             self.printdebug("Adding: "+head+(" (Tail: "+str(tail)+")")*bool(tail))
-            if not head or head == os.curdir:
-                break
-            elif tail is None and tail_addtos:
+            if tail is None and tail_addtos:
                 item = head
                 if item in self.included_files:
                     break
                 else:
-                    addtos = tail_addtos+[self.included_files]
+                    filename = posixpath.basename(item)
+                    if item in self.all_files:
+                        break
+                    else:
+                        addtos = tail_addtos+[self.included_files]
             elif head_addtos:
                 item = head+os.sep
                 addtos = head_addtos
