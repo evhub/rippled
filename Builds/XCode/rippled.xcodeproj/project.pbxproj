@@ -20242,8 +20242,19 @@
 					../../../../../../usr/local/Cellar/openssl/1.0.1g/lib,
 					../../../../../../usr/local/lib,
 				);
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
+				OTHER_CFLAGS = (
+					"-g",
+					"-Wall",
+					"-Wno-char-subscripts",
+					"-Wno-deprecated",
+					"-Wno-deprecated-declarations",
+					"-Wno-deprecated-register",
+					"-Wno-format",
+					"-Wno-sign-compare",
+					"-Wno-unused-function",
+					"-Wno-unused-variable",
+				);
+				OTHER_LDFLAGS = "-rdynamic";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGET_BUILD_DIR = build/clang.release/rippled;
 			};
@@ -20708,8 +20719,20 @@
 					../../../../../../usr/local/Cellar/openssl/1.0.1g/lib,
 					../../../../../../usr/local/lib,
 				);
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
+				OTHER_CFLAGS = (
+					"-fno-strict-aliasing",
+					"-O3",
+					"-Wall",
+					"-Wno-char-subscripts",
+					"-Wno-deprecated",
+					"-Wno-deprecated-declarations",
+					"-Wno-deprecated-register",
+					"-Wno-format",
+					"-Wno-sign-compare",
+					"-Wno-unused-function",
+					"-Wno-unused-variable",
+				);
+				OTHER_LDFLAGS = "-rdynamic";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGET_BUILD_DIR = build/clang.release/rippled;
 			};
@@ -21186,8 +21209,19 @@
 					../../../../../../usr/local/Cellar/openssl/1.0.1g/lib,
 					../../../../../../usr/local/lib,
 				);
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
+				OTHER_CFLAGS = (
+					"-g",
+					"-Wall",
+					"-Wno-char-subscripts",
+					"-Wno-deprecated",
+					"-Wno-deprecated-declarations",
+					"-Wno-deprecated-register",
+					"-Wno-format",
+					"-Wno-sign-compare",
+					"-Wno-unused-function",
+					"-Wno-unused-variable",
+				);
+				OTHER_LDFLAGS = "-rdynamic";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGET_BUILD_DIR = build/clang.debug/rippled;
 			};
@@ -21661,8 +21695,20 @@
 					../../../../../../usr/local/Cellar/openssl/1.0.1g/lib,
 					../../../../../../usr/local/lib,
 				);
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
+				OTHER_CFLAGS = (
+					"-fno-strict-aliasing",
+					"-O3",
+					"-Wall",
+					"-Wno-char-subscripts",
+					"-Wno-deprecated",
+					"-Wno-deprecated-declarations",
+					"-Wno-deprecated-register",
+					"-Wno-format",
+					"-Wno-sign-compare",
+					"-Wno-unused-function",
+					"-Wno-unused-variable",
+				);
+				OTHER_LDFLAGS = "-rdynamic";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGET_BUILD_DIR = build/clang.debug/rippled;
 			};

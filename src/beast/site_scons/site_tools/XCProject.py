@@ -56,6 +56,11 @@ def unQualifyTarget(target):
     return xcode.common.ParseQualifiedTarget(target)[1]
 
 
+def removeTargetToolset(target):
+    build_file, unqualified_target, _ = xcode.common.ParseQualifiedTarget(target)
+    return xcode.common.QualifiedTarget(build_file, unqualified_target, None)
+
+
 def pathList(path, splitter=posixpath):
     out = []
     head, tail = path, None
@@ -197,7 +202,7 @@ def XCProject(project_node, configs):
         target_dict_list.append({
             "xcode_create_dependents_test_runner": 0,
             "target_name": target_name,
-            "toolset": None,
+            "toolset": "target",
             "suppress_wildcard": False,
             "run_as": None
             })
@@ -243,21 +248,30 @@ class ConfigManager(object):
         self.include_dirs = []
         self.library_dirs = []
         self.defines_dict = {}
-        release = None
         self.printdebug("Configs:")
         self.recursion += 1
+        debug = None
+        release = None
         for config in self.configs:
             self.printdebug("Config: "+str(config))
             if config["variant"] == "debug":
-                debug = config
+                if debug:
+                    raise ValueError("Multiple debug targets found")
+                else:
+                    debug = config
             elif config["variant"] == "release":
-                release = config
+                if release:
+                    raise ValueError("Multiple release targets found")
+                else:
+                    release = config
             else:
                 raise ValueError("Unkown variant "+str(config["variant"]))
         self.recursion -= 1
         self.printdebug("Debug:")
         self.recursion += 1
         self.env = debug["env"]
+        debug_cflags = xsorted(self.env["CCFLAGS"])
+        debug_ldflags = xsorted(self.env["LINKFLAGS"])
         self.update()
         self.walk(debug["target"])
         self.recursion -= 1
@@ -265,8 +279,13 @@ class ConfigManager(object):
             self.printdebug("Release:")
             self.recursion += 1
             self.env = release["env"]
+            release_cflags = xsorted(self.env["CCFLAGS"])
+            release_ldflags = xsorted(self.env["LINKFLAGS"])
             self.walk(self.formatTarget(debug["target"]), self.addTarget(release["target"], "Release"))
             self.recursion -= 1
+        else:
+            release_cflags = debug_cflags
+            release_ldflags = debug_ldflags
         self.printdebug("Extras:")
         self.recursion += 1
         extras = [
@@ -283,8 +302,8 @@ class ConfigManager(object):
         self.sort()
         for target in self.target_configs:
             self.target_configs[target]["configurations"] = {
-                "Release": targetConfiguration(False, self.include_dirs, self.library_dirs, self.defines_dict[target]),
-                "Debug": targetConfiguration(True, self.include_dirs, self.library_dirs, self.defines_dict[target])
+                "Release": targetConfiguration(False, release_cflags, release_ldflags, self.include_dirs, self.library_dirs, self.defines_dict[target]),
+                "Debug": targetConfiguration(True, debug_cflags, debug_ldflags, self.include_dirs, self.library_dirs, self.defines_dict[target])
                 }
         return self.target_configs, self.included_files
 
@@ -312,7 +331,7 @@ class ConfigManager(object):
         return convertPath(os.path.relpath(os.path.abspath(str(path)), self.build_file_head))
 
     def formatTarget(self, target):
-        return xcode.common.QualifiedTarget(self.build_file, self.formatPath(target), None)
+        return xcode.common.QualifiedTarget(self.build_file, self.formatPath(target), "target")
 
     def addTarget(self, target, default_configuration="Debug"):
         name = str(target)
@@ -462,10 +481,12 @@ def XCProjectConfig(self, variant, targets, env):
 
 class Options(object):
     suffix = ""
-    generator_output = ""
+    generator_output = None
 
 
 def targetConfiguration(debug=None,
+                        cflags="",
+                        ldflags="",
                         include_dirs=None,
                         library_dirs=None,
                         defines=None,
@@ -477,16 +498,16 @@ def targetConfiguration(debug=None,
         "include_dirs": include_dirs or [],
         "library_dirs": library_dirs or [],
         "defines": defines or [],
-        "xcode_settings": targetconfig(debug)
+        "xcode_settings": targetconfig(debug, cflags, ldflags)
         }
 
 
-def targetconfig(debug=None):
+def targetconfig(debug=None, cflags="", ldflags=""):
     """Assembles The Default Configuration For A Target."""     # This function only implements version 46
     out = {
         "PRODUCT_NAME" : "$(TARGET_NAME)",
-        "OTHER_CFLAGS" : "",
-        "OTHER_LDFLAGS" : ""
+        "OTHER_CFLAGS" : cflags,
+        "OTHER_LDFLAGS" : ldflags
         }
     if debug:
         out.update({
