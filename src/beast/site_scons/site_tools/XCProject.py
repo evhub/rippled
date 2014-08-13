@@ -358,20 +358,18 @@ class ConfigManager(object):
         self.recursion -= 2
         return target
 
-    def addItem(self, child, target=None, head_addtos=None, tail_addtos=None):
+    def addItem(self, child, target=None, head_addtos=None, tail_addtos=None, depth=2):
         if target is not None:
             target = str(target)
         if tail_addtos is None:
             if head_addtos:
                 tail_addtos = head_addtos
-            elif target is None:
-                tail_addtos = False
             else:
-                tail_addtos = [self.target_configs[target]["sources"]]
+                tail_addtos = False
         if head_addtos is None:
             head_addtos = [self.include_dirs]
         head, tail = self.formatPath(child), None
-        while head and head != os.curdir and not onlyParents(head, posixpath):
+        while depth and head and head != os.curdir and not onlyParents(head, posixpath):
             self.printdebug("Adding: "+head+(" (Tail: "+str(tail)+")")*bool(tail))
             if tail is None and tail_addtos:
                 item = head
@@ -402,6 +400,7 @@ class ConfigManager(object):
                     self.printdebug("Duplicate.")
                     self.recursion -= 1
                 break
+            depth -= 1
 
     def printaddtos(self, addtos, target=None):
         out = []
@@ -446,7 +445,7 @@ class ConfigManager(object):
                 for child in bsources:
                     self.printdebug("Source: "+str(child))
                     self.recursion += 1
-                    self.addItem(child, root)
+                    self.addItem(child, root, tail_addtos=[self.target_configs[target]["sources"]])
                     self.walk(child, root)
                     self.recursion -= 1
                 self.recursion -= 1
@@ -455,7 +454,7 @@ class ConfigManager(object):
                 for child in target.children(scan=1):
                     self.printdebug("Child: "+str(child))
                     self.recursion += 1
-                    self.addItem(child, root)
+                    self.addItem(child, root, tail_addtos=[self.target_configs[target]["sources"]])
                     self.walk(child, root)
                     self.recursion -= 1
                 self.recursion -= 1
