@@ -437,15 +437,18 @@ class ConfigManager(object):
                 self.printdebug("Item: "+str(target))
             self.recursion += 1
             if not os.path.isabs(str(target)) and target.has_builder():
-                builder = target.get_builder().get_name(self.env)
-                self.printdebug("Builder: "+str(builder))
+                builder = str(target.get_builder().get_name(self.env))
+                self.printdebug("Builder: "+builder)
                 bsources = target.get_binfo().bsources
                 self.printdebug("Sources:")
                 self.recursion += 1
+                addtos = False
+                if builder == "Program":
+                    addtos = [self.target_configs[target]["sources"]]
                 for child in bsources:
                     self.printdebug("Source: "+str(child))
                     self.recursion += 1
-                    self.addItem(child, root, tail_addtos=[self.target_configs[target]["sources"]])
+                    self.addItem(child, root, tail_addtos=addtos)
                     self.walk(child, root)
                     self.recursion -= 1
                 self.recursion -= 1
@@ -454,7 +457,7 @@ class ConfigManager(object):
                 for child in target.children(scan=1):
                     self.printdebug("Child: "+str(child))
                     self.recursion += 1
-                    self.addItem(child, root, tail_addtos=[self.target_configs[target]["sources"]])
+                    self.addItem(child, root)
                     self.walk(child, root)
                     self.recursion -= 1
                 self.recursion -= 1
