@@ -424,6 +424,9 @@ class ConfigManager(object):
         self.printdebug("To: "+", ".join(out))
         self.recursion -= 1
 
+    def getBuilder(self, target):
+        return str(target.get_builder().get_name(self.env))
+
     def walk(self, target, root=None):
         if root and target in self.target_configs:
             self.recursion += 1
@@ -437,7 +440,7 @@ class ConfigManager(object):
                 self.printdebug("Item: "+str(target))
             self.recursion += 1
             if not os.path.isabs(str(target)) and target.has_builder():
-                builder = str(target.get_builder().get_name(self.env))
+                builder = self.getBuilder(target)
                 self.printdebug("Builder: "+builder)
                 bsources = target.get_binfo().bsources
                 self.printdebug("Sources:")
@@ -448,7 +451,10 @@ class ConfigManager(object):
                 for child in bsources:
                     self.printdebug("Source: "+str(child))
                     self.recursion += 1
-                    self.addItem(child, root, tail_addtos=addtos)
+                    tail_addtos = addtos
+                    if not tail_addtos and self.getBuilder(child) == "Program":
+                        tail_addtos = [self.target_configs[target]["sources"]]
+                    self.addItem(child, root, tail_addtos=tail_addtos)
                     self.walk(child, root)
                     self.recursion -= 1
                 self.recursion -= 1
