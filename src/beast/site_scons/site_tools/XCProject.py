@@ -145,7 +145,7 @@ def XCProject(project_node, configs):
     build_file_head, build_file_tail = posixpath.split(project_node)
     build_file = posixpath.join(build_file_head, build_file_tail)
 
-    target_configs, included_files = ConfigManager(build_file, build_file_head, configs).processConfigs()
+    target_configs = ConfigManager(build_file, build_file_head, configs).processConfigs()
     target_list = xsorted(target_configs.keys())
 
     target_dict = {}
@@ -212,7 +212,7 @@ def XCProject(project_node, configs):
             "Debug": projectConfiguration(True),
             "Release": projectConfiguration(False)
             },
-        "included_files": included_files,
+        "included_files": [],
         "targets": target_dict_list
         }
 
@@ -232,19 +232,18 @@ def XCProject(project_node, configs):
 
 
 class ConfigManager(object):
-    debug = False
+    debug = True
     recursion = 0
 
     def __init__(self, build_file, build_file_head, configs):
         self.build_file = str(build_file)
-        self.build_file_head = str(build_file_head)
+        self.build_file_head = os.path.abspath(str(build_file_head))
         self.printdebug("Directory: "+self.build_file_head)
         self.configs = configs
 
     def processConfigs(self):
-        self.all_files = []
         self.target_configs = {}
-        self.included_files = []
+        self.all_files = []
         self.include_dirs = []
         self.library_dirs = []
         self.defines_dict = {}
@@ -305,7 +304,7 @@ class ConfigManager(object):
                 "Release": targetConfiguration(False, release_cflags, release_ldflags, self.include_dirs, self.library_dirs, self.defines_dict[target]),
                 "Debug": targetConfiguration(True, debug_cflags, debug_ldflags, self.include_dirs, self.library_dirs, self.defines_dict[target])
                 }
-        return self.target_configs, self.included_files
+        return self.target_configs
 
     def update(self):
         self.printdebug("Environment:")
@@ -317,7 +316,6 @@ class ConfigManager(object):
         self.recursion -= 1
 
     def sort(self):
-        self.included_files = xsorted(self.included_files)
         self.include_dirs = xsorted(self.include_dirs)
         self.library_dirs = xsorted(self.library_dirs)
         for target in self.target_configs:
@@ -371,23 +369,26 @@ class ConfigManager(object):
         head, tail = self.formatPath(child), None
         while depth and head and head != os.curdir and not onlyParents(head, posixpath):
             self.printdebug("Adding: "+head+(" (Tail: "+str(tail)+")")*bool(tail))
-            if tail is None and tail_addtos:
-                item = head
-                if item in self.included_files:
-                    break
-                else:
-                    filename = posixpath.basename(item)
+            do = False
+            if tail is None:
+                if tail_addtos:
+                    item = head
                     if item in self.all_files:
+                        self.recursion += 1
+                        self.printdebug("Duplicate.")
+                        self.recursion -= 1
                         break
                     else:
-                        addtos = tail_addtos+[self.included_files]
+                        addtos = tail_addtos+[self.all_files]
+                else:
+                    addtos = []
+                    do = True
             elif head_addtos:
                 item = head+os.sep
                 addtos = head_addtos
             else:
                 break
             self.printaddtos(addtos, target)
-            do = False
             for addto in addtos:
                 if item not in addto:
                     addto.append(item)
@@ -395,18 +396,17 @@ class ConfigManager(object):
             if do:
                 head, tail = posixpath.split(head)
             else:
-                if tail is None:
-                    self.recursion += 1
-                    self.printdebug("Duplicate.")
-                    self.recursion -= 1
+                self.recursion += 1
+                self.printdebug("Duplicate.")
+                self.recursion -= 1
                 break
             depth -= 1
 
     def printaddtos(self, addtos, target=None):
         out = []
         for addto in addtos:
-            if addto is self.included_files:
-                out.append("Included Files")
+            if addto is self.all_files:
+                out.append("All Files")
             elif addto is self.include_dirs:
                 out.append("Include Directories")
             elif addto is self.library_dirs:
@@ -421,13 +421,18 @@ class ConfigManager(object):
                 print("XCProject Warning: Adding to unknown file list "+repr(addto))
                 out.append("Unknown")
         self.recursion += 1
-        self.printdebug("To: "+", ".join(out))
+        if out:
+            self.printdebug("To: "+", ".join(out))
         self.recursion -= 1
 
     def getBuilder(self, target):
-        return str(target.get_builder().get_name(self.env))
+        test = target.get_builder()
+        if test is not None:
+            return str(test.get_name(self.env))
+        else:
+            return test
 
-    def walk(self, target, root=None):
+    def walk(self, target, root=None, addtos=False):
         if root and target in self.target_configs:
             self.recursion += 1
             self.printdebug("Dependency: "+str(target))
@@ -441,30 +446,33 @@ class ConfigManager(object):
             self.recursion += 1
             if not os.path.isabs(str(target)) and target.has_builder():
                 builder = self.getBuilder(target)
-                self.printdebug("Builder: "+builder)
-                bsources = target.get_binfo().bsources
-                self.printdebug("Sources:")
-                self.recursion += 1
-                addtos = False
+                self.printdebug("Builder: "+str(builder))
                 if builder == "Program":
-                    addtos = [self.target_configs[target]["sources"]]
-                for child in bsources:
-                    self.printdebug("Source: "+str(child))
-                    self.recursion += 1
-                    tail_addtos = addtos
-                    if not tail_addtos and self.getBuilder(child) == "Program":
-                        tail_addtos = [self.target_configs[target]["sources"]]
-                    self.addItem(child, root, tail_addtos=tail_addtos)
-                    self.walk(child, root)
+                    addtos = [self.target_configs[root]["sources"]]
+                self.printdebug("Items:")
+                self.recursion += 1
+                for child in target.get_binfo().bsources:
+                    child_builder = self.getBuilder(child)
+                    if child_builder == "Object":
+                        self.printdebug("Object: "+str(child))
+                        self.recursion += 1
+                    else:
+                        self.printdebug("Source: "+str(child)+(" (Builder: "+str(child_builder)+")")*bool(child_builder))
+                        self.recursion += 1
+                        self.addItem(child, root, False, addtos)
+                    if child_builder:
+                        self.walk(child, root, addtos)
                     self.recursion -= 1
                 self.recursion -= 1
                 self.printdebug("Children:")
                 self.recursion += 1
                 for child in target.children(scan=1):
-                    self.printdebug("Child: "+str(child))
+                    child_builder = self.getBuilder(child)
+                    self.printdebug("Child: "+str(child)+(" (Builder: "+str(child_builder)+")")*bool(child_builder))
                     self.recursion += 1
                     self.addItem(child, root)
-                    self.walk(child, root)
+                    if child_builder:
+                        self.walk(child, root)
                     self.recursion -= 1
                 self.recursion -= 1
             self.recursion -= 1
