@@ -142,7 +142,7 @@
 		C90FC0FAEFFC67CD518164BC /* rippled */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = rippled; path = build/clang.release/rippled; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE774425B22E87C8FE94D296 /* overlay.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = overlay.cpp; sourceTree = "<group>"; };
 		D47FBD70C73070CAD8EF440C /* app2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = app2.cpp; sourceTree = "<group>"; };
-		D6C904103AAF0680F11D76C4 /* beastobjc.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = beastobjc.mm; sourceTree = "<group>"; };
+		D6C904103AAF0680F11D76C4 /* beastobjc.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = beastobjc.mm; sourceTree = "<group>"; };
 		DA0A981939DCA5559CB55F5E /* app1.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = app1.cpp; sourceTree = "<group>"; };
 		E7A175137C587FF2CC7485EC /* websocket.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = websocket.cpp; sourceTree = "<group>"; };
 		EA3BFC645F0345A9FA1AD405 /* rpcx.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = rpcx.cpp; sourceTree = "<group>"; };

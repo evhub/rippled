@@ -232,7 +232,7 @@ def XCProject(project_node, configs):
 
 
 class ConfigManager(object):
-    debug = True
+    debug = False
     recursion = 0
 
     def __init__(self, build_file, build_file_head, configs):
