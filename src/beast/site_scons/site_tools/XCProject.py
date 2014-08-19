@@ -247,6 +247,19 @@ class ConfigManager(object):
         self.include_dirs = []
         self.library_dirs = []
         self.defines_dict = {}
+        self.printdebug("Roots:")
+        self.recursion += 1
+        extras = [
+            ("/usr/local/bin/",     [self.library_dirs]),
+            ("/usr/bin/",           [self.library_dirs]),
+            ("/usr/local/include/", [self.include_dirs]),
+            ("/usr/include/",       [self.include_dirs]),
+            ("/usr/local/lib/",     [self.library_dirs]),
+            ("/usr/lib/",           [self.library_dirs])
+            ]
+        for path, addtos in extras:
+            self.addItem(localPath(path), None, addtos)
+        self.recursion -= 1
         self.printdebug("Configs:")
         self.recursion += 1
         debug = None
@@ -280,24 +293,12 @@ class ConfigManager(object):
             self.env = release["env"]
             release_cflags = xsorted(self.env["CCFLAGS"])
             release_ldflags = xsorted(self.env["LINKFLAGS"])
+            self.update()
             self.walk(self.formatTarget(debug["target"]), self.addTarget(release["target"], "Release"))
             self.recursion -= 1
         else:
             release_cflags = debug_cflags
             release_ldflags = debug_ldflags
-        self.printdebug("Extras:")
-        self.recursion += 1
-        extras = [
-            ("/usr/local/bin/",     [self.library_dirs]),
-            ("/usr/bin/",           [self.library_dirs]),
-            ("/usr/local/include/", [self.include_dirs]),
-            ("/usr/include/",       [self.include_dirs]),
-            ("/usr/local/lib/",     [self.library_dirs]),
-            ("/usr/lib/",           [self.library_dirs])
-            ]
-        for path, addtos in extras:
-            self.addItem(localPath(path), None, addtos)
-        self.recursion -= 1
         self.sort()
         for target in self.target_configs:
             self.target_configs[target]["configurations"] = {
@@ -316,8 +317,6 @@ class ConfigManager(object):
         self.recursion -= 1
 
     def sort(self):
-        self.include_dirs = xsorted(self.include_dirs)
-        self.library_dirs = xsorted(self.library_dirs)
         for target in self.target_configs:
             self.target_configs[target]["sources"] = xsorted(self.target_configs[target]["sources"])
             self.target_configs[target]["libraries"] = xsorted(self.target_configs[target]["libraries"])
@@ -451,7 +450,7 @@ class ConfigManager(object):
                     addtos = [self.target_configs[root]["sources"]]
                 self.printdebug("Items:")
                 self.recursion += 1
-                for child in target.get_binfo().bsources:
+                for child in xsorted(target.get_binfo().bsources, key=str):
                     child_builder = self.getBuilder(child)
                     if child_builder == "Object":
                         self.printdebug("Object: "+str(child))
@@ -466,7 +465,7 @@ class ConfigManager(object):
                 self.recursion -= 1
                 self.printdebug("Children:")
                 self.recursion += 1
-                for child in target.children(scan=1):
+                for child in xsorted(target.children(scan=1), key=str):
                     child_builder = self.getBuilder(child)
                     self.printdebug("Child: "+str(child)+(" (Builder: "+str(child_builder)+")")*bool(child_builder))
                     self.recursion += 1
