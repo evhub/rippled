@@ -31,6 +31,7 @@ from gyp import xcode
 
 
 def makeList(x):
+    """Converts an object to a list."""
     if not x:
         return []
     elif type(x) is list:
@@ -42,6 +43,7 @@ def makeList(x):
 
 
 def itemList(items):
+    """Constructs a list of defines from a dictionary of defines."""
     out = []
     for item in items:
         if isinstance(item, dict):
@@ -53,15 +55,12 @@ def itemList(items):
 
 
 def unQualifyTarget(target):
+    """Removes gyp's qualified target markup."""
     return xcode.common.ParseQualifiedTarget(target)[1]
 
 
-def removeTargetToolset(target):
-    build_file, unqualified_target, _ = xcode.common.ParseQualifiedTarget(target)
-    return xcode.common.QualifiedTarget(build_file, unqualified_target, None)
-
-
 def pathList(path, splitter=posixpath):
+    """Full splits a path into all of its parts."""
     out = []
     head, tail = path, None
     while head:
@@ -74,15 +73,18 @@ def pathList(path, splitter=posixpath):
 
 
 def convertPath(path, start=os.path, end=posixpath):
+    """Converts a local path into a posix path."""
     out = pathList(path, start)
     return end.join(*out)
 
 
 def localPath(path):
+    """Converts a posix path into a local path."""
     return convertPath(path, posixpath, os.path)
 
 
 def onlyParents(path, splitter=os.path):
+    """Determines whether a path is made up only of os.pardir (..)."""
     for dirname in pathList(path, splitter):
         if dirname and dirname != os.pardir:
             return False
@@ -93,6 +95,7 @@ def onlyParents(path, splitter=os.path):
 
 
 def buildProject(target, source, env):
+    """Wrapper around XCProject.""""
     if len(target) != 1:
         raise ValueError("Exactly one target must be specified")
 
@@ -107,6 +110,7 @@ def buildProject(target, source, env):
 
 
 def projectEmitter(target, source, env):
+    """Necessary for interfacing with scons."""
     if len(target) != 1:
         raise ValueError("Exactly one target must be specified")
 
@@ -126,6 +130,7 @@ projectBuilder = SCons.Builder.Builder(
 
 
 def generate(env):
+    """Adds the necessary configuration options."""
     try:
         env["BUILDERS"]["XCProject"]
     except KeyError:
@@ -134,6 +139,7 @@ def generate(env):
 
 
 def exists(env):
+    """Necessary for interfacing with scons."""
     return True
 
 
@@ -141,6 +147,7 @@ def exists(env):
 
 
 def XCProject(project_node, configs):
+    """Generates the xcodeproj file."""
     project_node = convertPath(os.path.normpath(str(project_node)))
     build_file_head, build_file_tail = posixpath.split(project_node)
     build_file = posixpath.join(build_file_head, build_file_tail)
@@ -232,16 +239,19 @@ def XCProject(project_node, configs):
 
 
 class ConfigManager(object):
+    # Turn this on to see a visual representation of what the generator is doing
     debug = False
     recursion = 0
 
     def __init__(self, build_file, build_file_head, configs):
+        """Provide this with the necessary variables for target_config construction."""
         self.build_file = str(build_file)
         self.build_file_head = os.path.abspath(str(build_file_head))
         self.printdebug("Directory: "+self.build_file_head)
         self.configs = configs
 
     def processConfigs(self):
+        """Uses the provided scons variables to update the target_configs."""
         self.target_configs = {}
         self.all_files = []
         self.include_dirs = []
@@ -249,6 +259,7 @@ class ConfigManager(object):
         self.defines_dict = {}
         self.printdebug("Roots:")
         self.recursion += 1
+        # These need to be searched last, and, annoyingly, it searches starting at the end of the list, so we add them here
         extras = [
             ("/usr/local/bin/",     [self.library_dirs]),
             ("/usr/bin/",           [self.library_dirs]),
@@ -277,6 +288,7 @@ class ConfigManager(object):
                 else:
                     release = config
             else:
+                # There should only be one debug and one release target
                 raise ValueError("Unkown variant "+str(config["variant"]))
         self.recursion -= 1
         self.printdebug("Debug:")
@@ -294,6 +306,7 @@ class ConfigManager(object):
             release_cflags = xsorted(self.env["CCFLAGS"])
             release_ldflags = xsorted(self.env["LINKFLAGS"])
             self.update()
+            # This is a bit of a hack, and should be fixed; instead of adding debug as a dependency, we should double-reference all the sources to both debug and release
             self.walk(self.formatTarget(debug["target"]), self.addTarget(release["target"], "Release"))
             self.recursion -= 1
         else:
@@ -308,6 +321,7 @@ class ConfigManager(object):
         return self.target_configs
 
     def update(self):
+        """Adds paths from CPPPATH and LIBPATH to include_dirs and library_dirs."""
         self.printdebug("Environment:")
         self.recursion += 1
         for include_path in self.env["CPPPATH"]:
@@ -317,6 +331,8 @@ class ConfigManager(object):
         self.recursion -= 1
 
     def sort(self):
+        """Sorts everything to ensure that the output is deterministic."""
+        # The only things we don't sort are the include_dirs and library_dirs because we need to preserve the correct search ordering
         for target in self.target_configs:
             self.target_configs[target]["sources"] = xsorted(self.target_configs[target]["sources"])
             self.target_configs[target]["libraries"] = xsorted(self.target_configs[target]["libraries"])
@@ -325,12 +341,15 @@ class ConfigManager(object):
             self.defines_dict[target] = xsorted(self.defines_dict[target])
 
     def formatPath(self, path):
+        """Makes a path relative to os.getcwd() or absolute relative to rippled/Builds/Xcode/."""
         return convertPath(os.path.relpath(os.path.abspath(str(path)), self.build_file_head))
 
     def formatTarget(self, target):
+        """Properly formats a target for gyp."""
         return xcode.common.QualifiedTarget(self.build_file, self.formatPath(target), "target")
 
     def addTarget(self, target, default_configuration="Debug"):
+        """Sets the initial variables properly for a new target."""
         name = str(target)
         target = self.formatTarget(target)
         self.printdebug("Target: "+str(target)+" (Name: "+name+")")
@@ -356,6 +375,7 @@ class ConfigManager(object):
         return target
 
     def addItem(self, child, target=None, head_addtos=None, tail_addtos=None, depth=2):
+        """Adds the head of a child to head_addtos, and the tail to tail_addtos."""
         if target is not None:
             target = str(target)
         if tail_addtos is None:
@@ -402,6 +422,7 @@ class ConfigManager(object):
             depth -= 1
 
     def printaddtos(self, addtos, target=None):
+        """Prints debug output for the addtos given."""
         out = []
         for addto in addtos:
             if addto is self.all_files:
@@ -419,12 +440,13 @@ class ConfigManager(object):
             else:
                 print("XCProject Warning: Adding to unknown file list "+repr(addto))
                 out.append("Unknown")
-        self.recursion += 1
         if out:
+            self.recursion += 1
             self.printdebug("To: "+", ".join(out))
-        self.recursion -= 1
+            self.recursion -= 1
 
     def getBuilder(self, target):
+        """Gets the builder for the target in question."""
         test = target.get_builder()
         if test is not None:
             return str(test.get_name(self.env))
@@ -432,6 +454,7 @@ class ConfigManager(object):
             return test
 
     def walk(self, target, root=None, addtos=False):
+        """Walks through all the children of a target, adding them to the proper lists."""
         if root and target in self.target_configs:
             self.recursion += 1
             self.printdebug("Dependency: "+str(target))
@@ -450,7 +473,7 @@ class ConfigManager(object):
                     addtos = [self.target_configs[root]["sources"]]
                 self.printdebug("Items:")
                 self.recursion += 1
-                for child in xsorted(target.get_binfo().bsources, key=str):
+                for child in target.get_binfo().bsources:
                     child_builder = self.getBuilder(child)
                     if child_builder == "Object":
                         self.printdebug("Object: "+str(child))
@@ -465,7 +488,7 @@ class ConfigManager(object):
                 self.recursion -= 1
                 self.printdebug("Children:")
                 self.recursion += 1
-                for child in xsorted(target.children(scan=1), key=str):
+                for child in target.children(scan=1):
                     child_builder = self.getBuilder(child)
                     self.printdebug("Child: "+str(child)+(" (Builder: "+str(child_builder)+")")*bool(child_builder))
                     self.recursion += 1
@@ -477,6 +500,7 @@ class ConfigManager(object):
             self.recursion -= 1
 
     def printdebug(self, output):
+        """Prints if self.debug."""
         if self.debug:
             print("  "*self.recursion+str(output))
 
@@ -485,6 +509,7 @@ class ConfigManager(object):
 
 
 def XCProjectConfig(self, variant, targets, env):
+    """The config interface provided to scons."""
     if len(targets) != 1:
         raise ValueError("Exactly one target must be specified")
     return {
@@ -495,6 +520,7 @@ def XCProjectConfig(self, variant, targets, env):
 
 
 class Options(object):
+    """Passed to gyp."""
     suffix = ""
     generator_output = None
 
